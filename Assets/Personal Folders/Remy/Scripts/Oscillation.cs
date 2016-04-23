@@ -3,7 +3,8 @@ using System.Collections;
 
 public class Oscillation : MonoBehaviour {
 
-    private float m_Rate = 1.0f;
+    public float m_RateMin = 0.5f;
+    public float m_Rate = 1.0f;
 
     public float m_Magnitude = 1.0f;
 
@@ -17,7 +18,7 @@ public class Oscillation : MonoBehaviour {
 	void Start () {
 
         m_Timer = Random.Range(0.0f, Mathf.PI * 2.0f);
-        m_Rate = Random.Range(0.5f, 1.0f);
+        m_Rate = Random.Range(m_RateMin, m_Rate);
 
 	}
 	
