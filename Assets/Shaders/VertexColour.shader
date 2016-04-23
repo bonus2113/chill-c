@@ -7,7 +7,6 @@
 	}
 	SubShader
 	{
-		Lighting On
 		Tags { "RenderType"="Opaque" "LightMode" = "ForwardBase" }
 		LOD 100
 
@@ -18,7 +17,6 @@
 			#pragma fragment frag
 			// make fog work
 			#pragma multi_compile_fwdadd_fullshadows
-			#pragma fullforwardshadows
 			
 			#include "UnityCG.cginc"
 			#include "AutoLight.cginc"
@@ -49,6 +47,7 @@
 				o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 				o.color = v.color;
+				
 				TRANSFER_VERTEX_TO_FRAGMENT(o);
 				return o;
 			}
@@ -59,6 +58,7 @@
 				fixed4 col = i.color * _Color;
 				float atten = LIGHT_ATTENUATION(i);
 				return col * atten; 
+				//return col;
 			}
 			ENDCG
 		}
