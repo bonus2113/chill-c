@@ -5,7 +5,7 @@ public class RunParticle : MonoBehaviour {
 
 
     private Vector2 m_MinMaxLifeTime = new Vector2(0.3f, 0.5f);
-    private Vector2 m_MinMaxScale = new Vector2(0.5f, 1.0f);
+    public Vector2 m_MinMaxScale = new Vector2(0.5f, 1.0f);
 
     private float m_LifeTime = 0.0f;
     private float m_Timer = 0.0f;

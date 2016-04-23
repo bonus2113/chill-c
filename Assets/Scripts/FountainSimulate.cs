@@ -7,8 +7,7 @@ public class FountainSimulate : MonoBehaviour {
   {
     public Vector3 pos;
     public float _pad1;
-    public Vector3 vel;
-    public float _pad2;
+    public Color col;
   }
 
   public ComputeShader SimulateShader;
@@ -29,7 +28,7 @@ public class FountainSimulate : MonoBehaviour {
     densityTex.isVolume = true;
     densityTex.enableRandomWrite = true;
     densityTex.useMipMap = false;
-    //densityTex.filterMode = FilterMode.Point;
+    densityTex.filterMode = FilterMode.Point;
     densityTex.volumeDepth = Resolution;
     densityTex.Create();
 
@@ -54,10 +53,14 @@ public class FountainSimulate : MonoBehaviour {
 
       GPUParticle[] gpuParticles = new GPUParticle[count];
 
-
+      
       for (int i = 0; i < count; i++)
       {
-        gpuParticles[i].pos = particlesToRender.transform.localToWorldMatrix * particles[i].position;
+        gpuParticles[i].pos = particles[i].position;
+        gpuParticles[i].col = particles[i].GetCurrentColor(particlesToRender);
+        gpuParticles[i].col.a = 1;
+
+        //gpuParticles[i].pos += particlesToRender.transform.position;
       }
 
       particleBuffer.SetData(gpuParticles);
