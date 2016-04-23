@@ -4,8 +4,7 @@
 struct Particle {
 	float3 pos;
 	float  _pad1;
-	float3 vel;
-	float  _pad2;
+	float4 col;
 };
 
 RWStructuredBuffer<Particle> Particles;
@@ -28,16 +27,21 @@ void DensityTransfer (uint3 id : SV_DispatchThreadID)
 	cellPos = mul(Object2World, float4(cellPos, 1)).xyz;
 	float cellSize = length(mul(Object2World, float4(1.0/Resolution, 0, 0, 0)));
 
-	float density = 0;
+	float4 color;
 	for(int i = 0; i < particleCount; i++) {
 		Particle particle = Particles.Load(i);
 		float dist = length(cellPos - particle.pos);
-		if(dist < 0.04) {
-			density += 1.0f;
+		if(dist < 0.1) {
+			color += particle.col;
 		}
 	}
 
-	Density[id.xyz] = float4(0, 0.5, 1.0, density != 0.0 ? 1 : 0 );
+	if(color.a != 0) {
+		color /= color.a;
+		color.a = 1;
+	}
+
+	Density[id.xyz] = color;
 }
 
 
