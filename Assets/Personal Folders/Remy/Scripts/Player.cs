@@ -10,6 +10,7 @@ public class Player : MonoBehaviour {
 
     private Vector3 m_Vel = Vector3.zero;
 
+    [Header("Animation")]
     public List<Mesh> m_RunFrames = new List<Mesh>();
     public Mesh m_StandMesh = null;
 
@@ -32,6 +33,16 @@ public class Player : MonoBehaviour {
 
     private bool b_Running = false;
 
+    [Header("RunParticles")]
+    public GameObject m_RunParticlePrefab = null;
+
+    private const int c_NumRunParticles = 128;
+    private List<GameObject> m_ParticlePool = new List<GameObject>();
+    private Transform m_ParticleRoot = null;
+    private float m_ParticleTimer = 0.0f;
+    private float m_ParticleSpawnInterval = 1.0f / 20.0f;
+    private int m_CurrentParticleID = 0;
+
     void Awake()
     {
         if (m_Instance != null)
@@ -44,6 +55,17 @@ public class Player : MonoBehaviour {
         this.m_MeshFilter = this.GetComponent<MeshFilter>();
 
         m_FrameTime = 1.0f / m_FramesPerSecond;
+
+        //init particlePool
+        m_ParticleRoot = new GameObject().transform;
+
+        for (int i = 0; i < c_NumRunParticles; i++)
+        {
+            var go = GameObject.Instantiate(m_RunParticlePrefab);
+            go.transform.SetParent(m_ParticleRoot);
+            go.SetActive(false);
+            m_ParticlePool.Add(go);
+        }
     }
 
 	// Use this for initialization
@@ -87,6 +109,7 @@ public class Player : MonoBehaviour {
 
         if (b_Running)
         {
+            //anim
             m_AnimTimer += Time.deltaTime;
 
             if (m_AnimTimer >= m_FrameTime)
@@ -96,6 +119,16 @@ public class Player : MonoBehaviour {
                 m_CurrentFrame %= m_RunFrames.Count;
 
                 m_MeshFilter.mesh = m_RunFrames[m_CurrentFrame];
+            }
+            //particle
+
+            m_ParticleTimer += Time.deltaTime;
+            if (m_ParticleTimer >= m_ParticleSpawnInterval)
+            {
+                m_ParticlePool[m_CurrentParticleID].GetComponent<RunParticle>().Activate(m_Vel);
+                m_CurrentParticleID++;
+                m_CurrentParticleID %= c_NumRunParticles;
+                m_ParticleTimer -= m_ParticleSpawnInterval;
             }
         }
 
