@@ -157,7 +157,7 @@ public class Player : MonoBehaviour {
 
     void OnCollisionExit(Collision colInfo)
     {
-        Debug.Log("Not COlliding");
+        //Debug.Log("Not COlliding");
 
         b_Colliding = false;
     }
@@ -165,7 +165,7 @@ public class Player : MonoBehaviour {
     void OnCollisionEnter(Collision colInfo)
     {
         b_Colliding = true;
-        Debug.Log("COlliding");
+        //Debug.Log("COlliding");
         m_LastPos += colInfo.contacts[0].normal * 0.1f;
         this.transform.position = m_LastPos;
         m_Vel = Vector3.zero;
