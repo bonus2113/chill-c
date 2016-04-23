@@ -52,6 +52,7 @@ public class RisePlayerNear : ReactOnPlayerNear {
                 if (m_ClickTimer >= m_ClickStartTime)
                 {
                     b_ClickBehaviourStarted = true;
+                    SoundManager.Instance.PlaySound(SoundManager.Sounds.PLOP, 0.2f);
                 }
             }
             else
@@ -63,6 +64,7 @@ public class RisePlayerNear : ReactOnPlayerNear {
                 {
                     b_TriggerClickBehaviour = false;
                     m_TargetOffset = (b_PlayerNear)?m_RiseMagnitude:0.0f;
+                    SoundManager.Instance.PlaySound(SoundManager.Sounds.PLOP, 0.2f);
                 }
             }
         }
@@ -82,6 +84,8 @@ public class RisePlayerNear : ReactOnPlayerNear {
         base.OnPlayerFar();
 
         m_TargetOffset = 0.0f;
+
+        SoundManager.Instance.PlaySound(SoundManager.Sounds.PLOP, 0.2f);
     }
 
     protected void OnWormClicked(WormEvents.WormClicked e)
