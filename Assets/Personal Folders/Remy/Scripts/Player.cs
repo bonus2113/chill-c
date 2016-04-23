@@ -8,6 +8,25 @@ public class Player : MonoBehaviour {
 
     private Vector3 m_Vel = Vector3.zero;
 
+    private static Player m_Instance = null;
+    public static Player Instance
+    {
+        get
+        {
+            return m_Instance;
+        }
+    }
+
+    void Awake()
+    {
+        if (m_Instance != null)
+        {
+            Debug.LogError("Player already exists.");
+        }
+
+        m_Instance = this;
+    }
+
 	// Use this for initialization
 	void Start () {
 	
@@ -29,9 +48,6 @@ public class Player : MonoBehaviour {
         m_Vel -= c_Friction * m_Vel * Time.deltaTime;
 
         m_Vel += inputDir * c_Accel * Time.deltaTime;
-
-        Debug.Log("InputDir: " + inputDir);
-        Debug.Log("Vel: " + m_Vel);
 
         this.transform.position += m_Vel * Time.deltaTime;
 
