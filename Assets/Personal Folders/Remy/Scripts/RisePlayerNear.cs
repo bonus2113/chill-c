@@ -57,9 +57,9 @@ public class RisePlayerNear : ReactOnPlayerNear {
             else
             {
                 float dif = (m_TargetOffset - m_CurrentOffset);
-                m_CurrentOffset += dif * m_FarLerpRate * Time.deltaTime;
+                m_CurrentOffset += dif * m_NearLerpRate * Time.deltaTime;
 
-                if (Mathf.Abs(dif) < 0.001f)
+                if (Mathf.Abs(dif) < 0.01f)
                 {
                     b_TriggerClickBehaviour = false;
                     m_TargetOffset = (b_PlayerNear)?m_RiseMagnitude:0.0f;
