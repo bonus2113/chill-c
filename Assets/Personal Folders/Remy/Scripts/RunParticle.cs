@@ -13,6 +13,7 @@ public class RunParticle : MonoBehaviour {
     private Vector3 m_Direction = Vector3.zero;
     private Vector2 m_MinMaxPlayerVelFactor = new Vector2(0.05f, 0.2f);
     private float m_MaxRightDeviation = 90.0f;
+    private float m_MaxUpVelocity = 2.0f;
 
     private float m_StartScale = 1.0f;
 
@@ -42,6 +43,7 @@ public class RunParticle : MonoBehaviour {
         Vector3 dir = -playerVel * Random.Range(m_MinMaxPlayerVelFactor.x, m_MinMaxPlayerVelFactor.y);
 
         dir = Quaternion.Euler(Vector3.up * Random.Range(-m_MaxRightDeviation, m_MaxRightDeviation)) * dir;
+        dir.y += Random.Range(0.0f, m_MaxUpVelocity);
 
         this.m_Direction = dir;
     }
