@@ -80,18 +80,19 @@
         // Calculate inverse of ray direction once.
         float3 invRayDir = 1.0 / rayDir;
 
-        float3 voxelPos = startPos;
+        float3 voxelPos = startPos + rayDir * 0.01;
 
         fixed4 finalColor = fixed4(0, 0, 0, 0);
 
         // Traverse through voxels until ray exits volume.
         [loop]
-        while (greaterThanEqual(voxelPos, float3(-0.51, -0.51, -0.51)) && lessThan(voxelPos, float3(0.51, 0.51, 0.51))) {
+        while (greaterThanEqual(voxelPos, float3(-0.5, -0.5, -0.5)) && lessThan(voxelPos, float3(0.5, 0.5, 0.5))) {
           // Sample 3D texture at current position.
-          float4 color = tex3Dlod(_DensityTex, float4(voxelPos + float3(0.5, 0.5, 0.5), 1));
+          float4 color = tex3Dlod(_DensityTex, float4(voxelPos + float3(0.5, 0.5, 0.5), 0));
 
           // Exit loop if a single sample has an alpha value greater than 0.
           if (color.a >= 0.1) {
+            color.a = 1;
             finalColor = color;
             break;
           }
