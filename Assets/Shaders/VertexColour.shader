@@ -62,5 +62,5 @@
 			}
 			ENDCG
 		}
-	}Fallback "Diffuse"
+	}Fallback "VertexLit"
 }
