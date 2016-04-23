@@ -29,7 +29,7 @@ public class FountainSimulate : MonoBehaviour {
     densityTex.isVolume = true;
     densityTex.enableRandomWrite = true;
     densityTex.useMipMap = false;
-    densityTex.filterMode = FilterMode.Point;
+    //densityTex.filterMode = FilterMode.Point;
     densityTex.volumeDepth = Resolution;
     densityTex.Create();
 
