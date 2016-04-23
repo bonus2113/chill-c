@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class EyeLook2 : MonoBehaviour {
+public class EyeLook : MonoBehaviour {
 
     public Vector3 upAxis = Vector3.up;
 
@@ -14,9 +14,8 @@ public class EyeLook2 : MonoBehaviour {
 	void Update () {
 
         Vector3 eyeToPlayer = Player.Instance.transform.position - this.transform.position;
-        eyeToPlayer.y = 0.0f;
         eyeToPlayer.Normalize();
-        this.transform.rotation = Quaternion.LookRotation(eyeToPlayer, upAxis);
+        this.transform.rotation = Quaternion.LookRotation(upAxis, eyeToPlayer);
 
     }
 }

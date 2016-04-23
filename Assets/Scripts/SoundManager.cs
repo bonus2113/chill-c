@@ -2,26 +2,27 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class SoundManager : MonoBehaviour {
+public class SoundManager : MonoBehaviour
+{
     [SerializeField]
-    private AudioClip Background;
+    private AudioClip ambientLoop;
     [SerializeField]
-    private List<AudioClip> SplashSounds;
+    private AudioClip themeIntro;
     [SerializeField]
-    private AudioClip Bang;
-    [SerializeField]
-    private AudioClip Ready;
-    [SerializeField]
-    private AudioClip PlayerConnected;
-    [SerializeField]
-    private AudioClip BoardBoing;
-    [SerializeField]
-    private List<AudioClip> HitSounds;
-    [SerializeField]
-    private List<AudioClip> WoodSounds;
+    private AudioClip themeLoop;
 
-    private AudioSource m_BackGroundMusicSource = null;
-    private bool b_BackgroundPlaying = false;
+
+    [SerializeField]
+    private AudioClip plop;
+    [SerializeField]
+    private List<AudioClip> footSteps;
+
+    private AudioSource m_ambientLoop = null;
+    private AudioSource m_theme = null;
+    private bool m_loopingPlaying = false;
+
+
+    private float footstepTimer = 0f;
 
     public static SoundManager Instance
     {
@@ -32,19 +33,15 @@ public class SoundManager : MonoBehaviour {
                 m_Instance = new SoundManager();
             }
             return m_Instance;
+
         }
     }
     private static SoundManager m_Instance = null;
 
     public enum Sounds
     {
-        SPLOOSH,
-        BANG,
-        READY,
-        PLAYERCONNECTED,
-        BOARDBOING,
-        HIT,
-        WOOD
+        PLOP,
+        FOOTSTEP
     };
 
     void Awake()
@@ -58,25 +55,45 @@ public class SoundManager : MonoBehaviour {
         
         m_Instance = this;
 
-        this.m_BackGroundMusicSource = this.gameObject.AddComponent<AudioSource>();
-        this.m_BackGroundMusicSource.clip = Background;
-        this.m_BackGroundMusicSource.loop = true;
+        this.m_ambientLoop = this.gameObject.AddComponent<AudioSource>();
+        this.m_ambientLoop.clip = ambientLoop;
+        this.m_ambientLoop.loop = true;
+        this.m_ambientLoop.volume = 0.3f;
+
+        this.m_theme = this.gameObject.AddComponent<AudioSource>();
+        this.m_theme.clip = themeLoop;
+        this.m_theme.loop = true;
 
         DontDestroyOnLoad(transform.gameObject);
+        StartBackgroundMusic();
+    }
+
+    void Update()
+    {
+        footstepTimer -= Time.deltaTime;
+        if(Player.Instance.isRunning & footstepTimer < 0f)
+        {
+            PlaySound(Sounds.FOOTSTEP, 0.48f);
+            footstepTimer = 0.25f;
+        }
     }
 
     public void StartBackgroundMusic()
     {
-        if (b_BackgroundPlaying)
+        if (m_loopingPlaying)
             return;
 
-        b_BackgroundPlaying = true;
-        SoundManager.Instance.m_BackGroundMusicSource.Play();
+        m_loopingPlaying = true;
+        SoundManager.Instance.m_ambientLoop.Play();
+        SoundManager.Instance.m_theme.Play();
     }
+
+
 
     public void StopBackgroundMusic()
     {
-        SoundManager.Instance.m_BackGroundMusicSource.Stop();
+        SoundManager.Instance.m_ambientLoop.Stop();
+        SoundManager.Instance.m_theme.Stop();
     }
 
     private AudioClip GetClipFromEnum(Sounds sound)
@@ -85,27 +102,11 @@ public class SoundManager : MonoBehaviour {
 
         switch (sound)
         {
-            case Sounds.BANG:
-                outClip = Bang;
+            case Sounds.PLOP:
+                outClip = plop;
                 break;
-            case Sounds.SPLOOSH:
-                outClip = SplashSounds[Random.Range(0, SplashSounds.Count)]; ;
-                Debug.Log("Returned Splash: " + outClip.name);
-                break;
-            case Sounds.PLAYERCONNECTED:
-                outClip = PlayerConnected;
-                break;
-            case Sounds.READY:
-                outClip = Ready;
-                break;
-            case Sounds.BOARDBOING:
-                outClip = BoardBoing;
-                break;
-            case Sounds.HIT:
-                outClip = HitSounds[Random.Range(0, HitSounds.Count)];
-                break;
-            case Sounds.WOOD:
-                outClip = WoodSounds[Random.Range(0, WoodSounds.Count)];
+            case Sounds.FOOTSTEP:
+                outClip = footSteps[Random.Range(0, footSteps.Count)];
                 break;
             default:
                 break;
