@@ -40,6 +40,13 @@ public class Player : MonoBehaviour {
     private int m_CurrentFrame = 0;
 
     private bool b_Running = false;
+    public bool isRunning
+    {
+        get
+        {
+            return b_Running;
+        }
+    }
 
     [Header("RunParticles")]
     public GameObject m_RunParticlePrefab = null;
