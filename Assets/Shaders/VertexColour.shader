@@ -7,6 +7,7 @@
 	}
 	SubShader
 	{
+		Lighting On
 		Tags { "RenderType"="Opaque" "LightMode" = "ForwardBase" }
 		LOD 100
 
@@ -20,6 +21,8 @@
 			#pragma fullforwardshadows
 			
 			#include "UnityCG.cginc"
+			#include "AutoLight.cginc"
+			#include "Lighting.cginc"
 
 			struct appdata
 			{
@@ -31,9 +34,9 @@
 			struct v2f
 			{
 				float2 uv : TEXCOORD0;
-				UNITY_FOG_COORDS(1)
-				float4 vertex : SV_POSITION;
+				float4 pos : SV_POSITION;
 				fixed4 color : COLOR;
+				LIGHTING_COORDS(3, 4)
 			};
 
 			sampler2D _MainTex;
@@ -43,17 +46,19 @@
 			v2f vert (appdata v)
 			{
 				v2f o;
-				o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
+				o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 				o.color = v.color;
+				TRANSFER_VERTEX_TO_FRAGMENT(o);
 				return o;
 			}
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
 				// sample the texture
-				fixed4 col = i.color * _Color;// tex2D(_MainTex, i.uv);
-				return col;
+				fixed4 col = i.color * _Color;
+				float atten = LIGHT_ATTENUATION(i);
+				return col * atten; 
 			}
 			ENDCG
 		}
