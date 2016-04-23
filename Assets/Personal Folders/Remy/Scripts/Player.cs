@@ -40,6 +40,13 @@ public class Player : MonoBehaviour {
     private int m_CurrentFrame = 0;
 
     private bool b_Running = false;
+    public bool isRunning
+    {
+        get
+        {
+            return b_Running;
+        }
+    }
 
     [Header("RunParticles")]
     public GameObject m_RunParticlePrefab = null;
@@ -50,6 +57,11 @@ public class Player : MonoBehaviour {
     private float m_ParticleTimer = 0.0f;
     private float m_ParticleSpawnInterval = 1.0f / 20.0f;
     private int m_CurrentParticleID = 0;
+
+    private Rigidbody m_RB = null;
+
+    private Vector3 m_LastPos = Vector3.zero;
+    private bool b_Colliding = false;
 
     void Awake()
     {
@@ -74,6 +86,8 @@ public class Player : MonoBehaviour {
             go.SetActive(false);
             m_ParticlePool.Add(go);
         }
+
+        this.m_RB = this.GetComponent<Rigidbody>();
     }
 
 	// Use this for initialization
@@ -82,6 +96,8 @@ public class Player : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+
+        //m_Vel = m_RB.velocity;
 
         //Movement
         float right = (Input.GetKey(KeyCode.A) ? -1.0f : 0.0f) + (Input.GetKey(KeyCode.D) ? 1.0f : 0.0f);
@@ -98,7 +114,12 @@ public class Player : MonoBehaviour {
 
         m_Vel += inputDir * c_Accel * Time.deltaTime;
 
-        this.transform.position += m_Vel * Time.deltaTime;
+        if (!b_Colliding)
+        {
+            this.m_LastPos = this.transform.position;
+            this.transform.position += m_Vel * Time.deltaTime;
+        }
+        //m_RB.velocity = m_Vel;
 
         if (m_Vel.magnitude > 1.0f)
         {
@@ -139,6 +160,23 @@ public class Player : MonoBehaviour {
                 m_ParticleTimer -= m_ParticleSpawnInterval;
             }
         }
+    }
 
+    void OnCollisionExit(Collision colInfo)
+    {
+        //Debug.Log("Not COlliding");
+
+        b_Colliding = false;
+    }
+
+    void OnCollisionEnter(Collision colInfo)
+    {
+        b_Colliding = true;
+        //Debug.Log("COlliding");
+        m_LastPos += colInfo.contacts[0].normal * 0.1f;
+        this.transform.position = m_LastPos;
+        m_Vel = Vector3.zero;
+
+        //Vector3.Reflect(m_Vel, colInfo.contacts[0].normal);
     }
 }
