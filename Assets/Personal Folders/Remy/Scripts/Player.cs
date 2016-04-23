@@ -25,6 +25,14 @@ public class Player : MonoBehaviour {
         }
     }
 
+    public Vector3 Velocity
+    {
+        get
+        {
+            return m_Vel;
+        }
+    }
+
     private float m_AnimTimer = 0.0f;
     private float m_FramesPerSecond = 12.0f;
 
