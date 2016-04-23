@@ -23,7 +23,7 @@ public class Camera : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
-        m_Offset += this.transform.position;
+        m_Offset = -(Player.Instance.transform.position - this.transform.position);
 
 	}
 	
