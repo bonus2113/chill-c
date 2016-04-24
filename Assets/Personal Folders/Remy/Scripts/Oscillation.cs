@@ -25,7 +25,7 @@ public class Oscillation : MonoBehaviour {
 	// Update is called once per frame
 	void LateUpdate () {
 
-        this.transform.position -= m_Axis * m_CurrentOffset;
+        //this.transform.position -= m_Axis * m_CurrentOffset;
 
         m_Timer += Time.deltaTime * m_Rate * Mathf.PI * 2.0f;
 

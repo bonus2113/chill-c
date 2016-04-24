@@ -17,7 +17,9 @@ public class ReactOnPlayerNear : MonoBehaviour {
     // Update is called once per frame
     protected virtual void Update() {
 
-        m_CurrentDistance = (Player.Instance.transform.position - this.transform.position).magnitude;
+        Vector3 myPos = this.transform.position;
+        myPos.y = 0.0f;
+        m_CurrentDistance = (Player.Instance.transform.position - myPos).magnitude;
 
         if (!b_PlayerNear)
         {
