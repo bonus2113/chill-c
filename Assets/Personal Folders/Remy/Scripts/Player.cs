@@ -114,11 +114,6 @@ public class Player : MonoBehaviour {
 
         m_Vel += inputDir * c_Accel * Time.deltaTime;
 
-        if (!b_Colliding)
-        {
-            this.m_LastPos = this.transform.position;
-            this.transform.position += m_Vel * Time.deltaTime;
-        }
         //m_RB.velocity = m_Vel;
 
         if (m_Vel.magnitude > 1.0f)
@@ -160,11 +155,24 @@ public class Player : MonoBehaviour {
                 m_ParticleTimer -= m_ParticleSpawnInterval;
             }
         }
+
+        m_RB.velocity = Vector3.zero;
+        m_RB.angularVelocity = Vector3.zero;
+    }
+
+    void FixedUpdate()
+    {
+        if (!b_Colliding)
+        {
+            this.m_LastPos = this.transform.position;
+            //this.transform.position += m_Vel * Time.deltaTime;
+            this.m_RB.MovePosition(this.transform.position + m_Vel * Time.fixedDeltaTime);
+        }
     }
 
     void OnCollisionExit(Collision colInfo)
     {
-        //Debug.Log("Not COlliding");
+        Debug.Log("Not COlliding");
 
         b_Colliding = false;
     }
@@ -172,9 +180,11 @@ public class Player : MonoBehaviour {
     void OnCollisionEnter(Collision colInfo)
     {
         b_Colliding = true;
-        //Debug.Log("COlliding");
-        m_LastPos += colInfo.contacts[0].normal * 0.1f;
-        this.transform.position = m_LastPos;
+        Debug.Log("COlliding: " + colInfo.gameObject.name);
+        Vector3 colNormal = colInfo.contacts[0].normal * Time.deltaTime;
+        colNormal.y = 0.0f;
+        //m_LastPos += -colInfo.relativeVelocity * Time.maximumDeltaTime;
+        this.transform.position = m_LastPos + colNormal;
         m_Vel = Vector3.zero;
 
         //Vector3.Reflect(m_Vel, colInfo.contacts[0].normal);
