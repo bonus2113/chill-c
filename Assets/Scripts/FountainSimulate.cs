@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
+using UnityEngine.Rendering;
 using System.Collections;
+using System.Collections.Generic;
 
 public class FountainSimulate : MonoBehaviour {
 
@@ -10,45 +12,150 @@ public class FountainSimulate : MonoBehaviour {
     public Color col;
   }
 
+  struct DrawIndirectCommand
+  {
+    public int VertexCountPerInstance;
+    public int InstanceCount;
+    public int StartVertexLocation;
+    public int StartInstanceLocation;
+  }
+
+
   public ComputeShader SimulateShader;
   public int Resolution;
   public ParticleSystem particlesToRender;
   public int FrameRate = 10;
+  public Shader ParticleShader;
 
+  Material particleMaterial;
   RenderTexture densityTex;
-  int densityTransferKernel;
+  int generatePointsKernel;
   MeshRenderer meshRend;
 
   ParticleSystem.Particle[] particles;
 
+  ComputeBuffer drawIndirectCmdBuffer;
+  ComputeBuffer pointBuffer;
+
+  ComputeBuffer vertexBuffer;
+
   float frameTime;
+
+  Dictionary<UnityEngine.Camera, CommandBuffer> cameras = new Dictionary<UnityEngine.Camera, CommandBuffer>();
 
   // Use this for initialization
   void Awake ()
   {
-    meshRend = GetComponent<MeshRenderer>();
-    densityTex = new RenderTexture(Resolution, Resolution, 0, RenderTextureFormat.ARGBFloat);
-    densityTex.isVolume = true;
-    densityTex.enableRandomWrite = true;
-    densityTex.useMipMap = false;
-    densityTex.filterMode = FilterMode.Point;
-    densityTex.volumeDepth = Resolution;
-    densityTex.Create();
+    particleMaterial = new Material(ParticleShader);
 
-    densityTransferKernel = SimulateShader.FindKernel("DensityTransfer");
-    SimulateShader.SetTexture(densityTransferKernel, "Density", densityTex);
-    meshRend.material.SetVector("_VolumeDimensions", new Vector4(Resolution, Resolution, Resolution));
-    meshRend.material.SetTexture("_DensityTex", densityTex);
+    generatePointsKernel = SimulateShader.FindKernel("GeneratePoints");
 
     particles = new ParticleSystem.Particle[particlesToRender.maxParticles];
 
     frameTime = 1.0f / FrameRate;
+
+    pointBuffer = new ComputeBuffer(Resolution * Resolution * Resolution, 12 * sizeof(float), ComputeBufferType.Append);
+    pointBuffer.SetCounterValue(0);
+
+    drawIndirectCmdBuffer = new ComputeBuffer(1, 16, ComputeBufferType.IndirectArguments);
+
+    drawIndirectCmdBuffer.SetData(new int[4] { 36, 1, 0, 0 });
+
+    vertexBuffer = new ComputeBuffer(36, 12);
+    vertexBuffer.SetData(new Vector3[]
+    {
+        new Vector3(-1.0f,-1.0f,-1.0f),
+        new Vector3(-1.0f,-1.0f, 1.0f),
+        new Vector3(-1.0f, 1.0f, 1.0f),
+        new Vector3( 1.0f, 1.0f,-1.0f),
+        new Vector3(-1.0f,-1.0f,-1.0f),
+        new Vector3(-1.0f, 1.0f,-1.0f),
+        new Vector3( 1.0f,-1.0f, 1.0f),
+        new Vector3(-1.0f,-1.0f,-1.0f),
+        new Vector3( 1.0f,-1.0f,-1.0f),
+        new Vector3( 1.0f, 1.0f,-1.0f),
+        new Vector3( 1.0f,-1.0f,-1.0f),
+        new Vector3(-1.0f,-1.0f,-1.0f),
+        new Vector3(-1.0f,-1.0f,-1.0f),
+        new Vector3(-1.0f, 1.0f, 1.0f),
+        new Vector3(-1.0f, 1.0f,-1.0f),
+        new Vector3( 1.0f,-1.0f, 1.0f),
+        new Vector3(-1.0f,-1.0f, 1.0f),
+        new Vector3(-1.0f,-1.0f,-1.0f),
+        new Vector3(-1.0f, 1.0f, 1.0f),
+        new Vector3(-1.0f,-1.0f, 1.0f),
+        new Vector3( 1.0f,-1.0f, 1.0f),
+        new Vector3( 1.0f, 1.0f, 1.0f),
+        new Vector3( 1.0f,-1.0f,-1.0f),
+        new Vector3( 1.0f, 1.0f,-1.0f),
+        new Vector3( 1.0f,-1.0f,-1.0f),
+        new Vector3( 1.0f, 1.0f, 1.0f),
+        new Vector3( 1.0f,-1.0f, 1.0f),
+        new Vector3( 1.0f, 1.0f, 1.0f),
+        new Vector3( 1.0f, 1.0f,-1.0f),
+        new Vector3(-1.0f, 1.0f,-1.0f),
+        new Vector3( 1.0f, 1.0f, 1.0f),
+        new Vector3(-1.0f, 1.0f,-1.0f),
+        new Vector3(-1.0f, 1.0f, 1.0f),
+        new Vector3( 1.0f, 1.0f, 1.0f),
+        new Vector3(-1.0f, 1.0f, 1.0f),
+        new Vector3( 1.0f,-1.0f, 1.0f)
+    });
+
+    particleMaterial.SetBuffer("Vertices", vertexBuffer);
+
+  }
+
+  public void OnDisable()
+  {
+    foreach (var cam in cameras)
+    {
+      if (cam.Key)
+      {
+        cam.Key.RemoveCommandBuffer(CameraEvent.BeforeForwardOpaque, cam.Value);
+      }
+    }
+  }
+
+  void OnWillRenderObject()
+  {
+    var act = gameObject.activeInHierarchy && enabled;
+    if (!act)
+    {
+      OnDisable();
+      return;
+    }
+
+    var cam = UnityEngine.Camera.main;
+    if (!cam)
+      return;
+
+    CommandBuffer buf = null;
+    if (cameras.ContainsKey(cam))
+    {
+      buf = cameras[cam];
+      buf.Clear();
+    }
+    else
+    {
+      buf = new CommandBuffer();
+      buf.name = "VoxelParticles";
+      cameras[cam] = buf;
+
+      cam.AddCommandBuffer(CameraEvent.BeforeForwardOpaque, buf);
+    }
+
+    ComputeBuffer.CopyCount(pointBuffer, drawIndirectCmdBuffer, 4);
+    particleMaterial.SetBuffer("VertexBuffer", vertexBuffer);
+    particleMaterial.SetBuffer("PointBuffer", pointBuffer);
+    particleMaterial.SetInt("Resolution", Resolution);
+    buf.DrawProceduralIndirect(transform.localToWorldMatrix, particleMaterial, -1, MeshTopology.Triangles, drawIndirectCmdBuffer);
+
   }
 
 
-
   // Update is called once per frame
-  void Update ()
+  void Update()
   {
     frameTime -= Time.deltaTime;
     if (frameTime > 0) return;
@@ -63,18 +170,15 @@ public class FountainSimulate : MonoBehaviour {
 
       GPUParticle[] gpuParticles = new GPUParticle[count];
 
-      
+
       for (int i = 0; i < count; i++)
       {
         gpuParticles[i].pos = particles[i].position;
         gpuParticles[i].col = particles[i].GetCurrentColor(particlesToRender);
-        gpuParticles[i].col.a = 1;
-
-        //gpuParticles[i].pos += particlesToRender.transform.position;
       }
 
       particleBuffer.SetData(gpuParticles);
-      SimulateShader.SetBuffer(densityTransferKernel, "Particles", particleBuffer);
+      SimulateShader.SetBuffer(generatePointsKernel, "Particles", particleBuffer);
 
       var mat = transform.localToWorldMatrix.transpose;
       SimulateShader.SetFloats("Object2World", new float[] {
@@ -85,13 +189,46 @@ public class FountainSimulate : MonoBehaviour {
       });
 
       SimulateShader.SetInt("Resolution", Resolution);
-      SimulateShader.SetFloat("Time", Time.timeSinceLevelLoad);
-      SimulateShader.SetFloat("dT", Time.deltaTime);
 
-      SimulateShader.Dispatch(densityTransferKernel, Resolution / 8, Resolution / 8, Resolution / 8);
 
-      meshRend.material.SetTexture("_DensityTex", densityTex);
+      pointBuffer.SetCounterValue(0);
+      SimulateShader.SetBuffer(generatePointsKernel, "PointBufferOutput", pointBuffer);
+
+      SimulateShader.Dispatch(generatePointsKernel, Resolution / 8, Resolution / 8, Resolution / 8);
+
       particleBuffer.Release();
+      OnWillRenderObject();
+
     }
   }
+
+  void OnDestroy()
+  {
+    pointBuffer.Release();
+    drawIndirectCmdBuffer.Release();
+    vertexBuffer.Release();
+  }
+
+  void OnDrawGizmosSelected()
+  {
+    DrawGizmo(true);
+  }
+
+  void OnDrawGizmos()
+  {
+    DrawGizmo(false);
+  }
+
+  void DrawGizmo(bool selected)
+  {
+    var col = new Color(0.0f, 0.7f, 1f, 1.0f);
+    col.a = selected ? 0.5f : 0.3f;
+    Gizmos.color = col;
+    Gizmos.matrix = transform.localToWorldMatrix;
+    Gizmos.DrawCube(Vector3.zero, Vector3.one);
+    col.a = selected ? 0.8f : 0.6f;
+    Gizmos.color = col;
+    Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
+  }
+
 }

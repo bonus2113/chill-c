@@ -1,5 +1,5 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel DensityTransfer
+#pragma kernel GeneratePoints
 
 struct Particle {
 	float3 pos;
@@ -7,31 +7,38 @@ struct Particle {
 	float4 col;
 };
 
-RWStructuredBuffer<Particle> Particles;
+struct CellInformation {
+    float3 pos;
+	float  _pad1;
+	float3 size;
+	float  _pad2;
+	float4 color;
+};
 
-RWTexture3D<float4> Density;
+StructuredBuffer<Particle> Particles;
+
+AppendStructuredBuffer<CellInformation> PointBufferOutput;
 
 float4x4 Object2World;
 uint Resolution;
-float Time;
-float dT;
+
 
 [numthreads(8,8,8)]
-void DensityTransfer (uint3 id : SV_DispatchThreadID)
+void GeneratePoints (uint3 id : SV_DispatchThreadID)
 {
     uint particleCount, stride;
 	Particles.GetDimensions(particleCount, stride);
 
-	float3 cellPos = float3(id.x, id.y, id.z)/float(Resolution) - float3(0.5, 0.5, 0.5);
+	float3 objSpaceCellPos = float3(id.x, id.y, id.z)/float(Resolution) - float3(0.5, 0.5, 0.5);
 
-	cellPos = mul(Object2World, float4(cellPos, 1)).xyz;
-	float cellSize = length(mul(Object2World, float4(1.0/Resolution, 0, 0, 0)));
+	float3 cellPos = mul(Object2World, float4(objSpaceCellPos, 1)).xyz;
+	float3 cellSize = mul(Object2World, float4(1.0/Resolution, 1.0/Resolution, 1.0/Resolution, 1)).xyz;
 
 	float4 color;
-	for(int i = 0; i < particleCount; i++) {
+	for(uint i = 0; i < particleCount; i++) {
 		Particle particle = Particles.Load(i);
 		float dist = length(cellPos - particle.pos);
-		if(dist < 0.1) {
+		if(dist < 0.09) {
 			color += particle.col;
 		}
 	}
@@ -39,9 +46,17 @@ void DensityTransfer (uint3 id : SV_DispatchThreadID)
 	if(color.a != 0) {
 		color /= color.a;
 		color.a = 1;
-	}
 
-	Density[id.xyz] = color;
+
+		CellInformation cell;
+		cell.pos = objSpaceCellPos;
+		cell.size = cellSize;
+		cell.color = color;
+		cell._pad1 = 0;
+		cell._pad2 = 0;
+
+		PointBufferOutput.Append(cell);
+	}
 }
 
 

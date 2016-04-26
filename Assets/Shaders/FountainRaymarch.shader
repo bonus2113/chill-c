@@ -1,4 +1,7 @@
-﻿Shader "Unlit/FountainRaymarch"
+﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+// Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
+
+Shader "Unlit/FountainRaymarch"
 {
 	Properties
 	{
@@ -44,7 +47,7 @@
 			{
 				v2f o;
 				o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
-        o.worldPos = mul(_Object2World, v.vertex).xyz;
+        o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
 				o.uv = TRANSFORM_TEX(v.uv, _DensityTex);
 				UNITY_TRANSFER_FOG(o,o.vertex);
         return o;
@@ -67,9 +70,9 @@
       PS_Output frag (v2f i) : SV_Target
       {
 
-        float3 startPos = mul(_World2Object, float4(i.worldPos, 1)).xyz;
+        float3 startPos = mul(unity_WorldToObject, float4(i.worldPos, 1)).xyz;
 
-        float3 eyePos = mul(_World2Object, float4(_WorldSpaceCameraPos, 1)).xyz;
+        float3 eyePos = mul(unity_WorldToObject, float4(_WorldSpaceCameraPos, 1)).xyz;
         float3 rayDir = normalize(startPos - eyePos);
 
         const float epsilon = 0.00001;
