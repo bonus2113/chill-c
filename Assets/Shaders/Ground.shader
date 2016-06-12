@@ -53,9 +53,11 @@
 			fixed4 frag (v2f i) : SV_Target
 			{
 				// sample the texture
-				fixed4 col = tex2D(_MainTex, i.uv) * tex2D(_GardenMap, i.uv);
+				fixed4 garden = tex2D(_GardenMap, i.uv);
+				fixed4 col = tex2D(_MainTex, i.uv) * garden;
 				float atten = LIGHT_ATTENUATION(i);
 				return col*atten;
+				//return garden;
 			}
 			ENDCG
 		}

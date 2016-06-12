@@ -5,6 +5,7 @@ public class GroundShaderController : MonoBehaviour {
 
     private Material m_Material = null;
     private Material m_BlitMaterial = null;
+    private Material m_FadeMaterial = null;
 
     private RenderTexture m_RenderTex = null;
 
@@ -15,11 +16,29 @@ public class GroundShaderController : MonoBehaviour {
     private float m_DebugTimer = 0.0f;
     private const float c_DebugInterval = 1.0f;
 
+    private float m_HalfSize = 5.0f;
+    private float m_BlobSize = 0.3f;
+    private Vector2 m_UVOffset = Vector2.zero;
+
+    public RenderTexture GetRenderTexture
+    {
+        get
+        {
+            return m_RenderTex;
+        }
+    }
+
     void Awake()
     {
+        m_HalfSize *= this.transform.localScale.x;
+        m_BlobSize /= this.transform.localScale.x;
+
+        m_UVOffset.x += this.transform.position.x / (m_HalfSize * 2.0f);
+        m_UVOffset.y += this.transform.position.z / (m_HalfSize * 2.0f);
+
         this.m_Material = this.GetComponent<Renderer>().material;
         m_RenderTex = new RenderTexture(c_TexSize, c_TexSize, 0, RenderTextureFormat.ARGB32);
-        m_RenderTex.useMipMap = true;
+        m_RenderTex.useMipMap = false;
         m_RenderTex.generateMips = false;
 
         m_RenderTex.Create();
@@ -29,10 +48,12 @@ public class GroundShaderController : MonoBehaviour {
         m_BlitMaterial = new Material(Shader.Find("Unlit/blitShader"));
         m_BlitMaterial.SetInt("_TexSize", c_TexSize);
 
-        BlitToUVPosition(new Vector2(0.5f, 0.5f), 0.5f);
+        m_FadeMaterial = new Material(Shader.Find("Unlit/tendToBlack"));
+        //m_FadeMaterial.SetTexture("_MainTex", m_RenderTex);
+
     }
 
-    private void BlitToUVPosition(Vector2 uv, float radiusUV)
+    public void BlitToUVPosition(Vector2 uv, float radiusUV)
     {
         int radiusPixel = (int)(radiusUV * c_TexSize);
         m_BlitMaterial.SetVector("_PosSize", new Vector4((uv.x) * c_TexSize - radiusPixel/2, (uv.y) * c_TexSize - radiusPixel/2, radiusPixel, radiusPixel));
@@ -49,12 +70,17 @@ public class GroundShaderController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-        m_DebugTimer += Time.deltaTime;
+        Vector2 playerPos = new Vector2(-Player.Instance.transform.position.x, -Player.Instance.transform.position.z);
 
-        if (m_DebugTimer >= c_DebugInterval)
-        {
-            m_DebugTimer -= c_DebugInterval;
-            BlitToUVPosition(new Vector2(Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f)), Random.Range(0.1f, 0.5f));
-        }
-	}
+        Vector2 uvPos = playerPos / (m_HalfSize * 2.0f);
+        uvPos += new Vector2(0.5f, 0.5f);
+
+        BlitToUVPosition(uvPos + m_UVOffset, m_BlobSize);
+        Graphics.Blit(null, m_RenderTex, m_FadeMaterial);
+    }
+
+    void OnRenderObject()
+    {
+       
+    }
 }

@@ -57,14 +57,16 @@
 
 				float2 uvPos2 = i.posSizeUVSpace.xy;
 				uvPos2.x = uvPos2.x - 1.0f;
-				float2 strokeUVPos2 = (i.uv - uvPos2) / i.posSizeUVSpace.zw;
+				//float2 strokeUVPos2 = (i.uv - uvPos2) / i.posSizeUVSpace.zw;
 
 				fixed4 strokeCol = tex2D(_MainTex, strokeUVPos);
-				fixed4 strokeCol2 = tex2D(_MainTex, strokeUVPos2);
-				col.xyz = fixed3(1, 1, 1) * (strokeCol.a);
-				col.xyz += fixed3(1, 1, 1) * (strokeCol2.a);
+				
+				clip(strokeCol.a - 0.075f);
+				
+				//fixed4 strokeCol2 = tex2D(_MainTex, strokeUVPos2);
+				col.xyz += fixed3(1, 1, 1);
 				//col.a = 1.0f;
-				col.a = strokeCol2.a + strokeCol.a;
+				col.a = strokeCol.a;
 				return col;
 			}
 			ENDCG
