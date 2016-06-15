@@ -33,6 +33,14 @@ public class Player : MonoBehaviour {
         }
     }
 
+    public float VelocityNormalised
+    {
+        get
+        {
+            return m_Vel.magnitude/(c_Accel/c_Friction);
+        }
+    }
+
     private float m_AnimTimer = 0.0f;
     private float m_FramesPerSecond = 12.0f;
 
@@ -62,6 +70,9 @@ public class Player : MonoBehaviour {
 
     private Vector3 m_LastPos = Vector3.zero;
     private bool b_Colliding = false;
+
+    private float m_FootstepTimer = 0.0f;
+    private const float c_FootstepTime = 0.2f;
 
     void Awake()
     {
@@ -119,13 +130,14 @@ public class Player : MonoBehaviour {
         if (m_Vel.magnitude > 1.0f)
         {
             b_Running = true;
+            m_FootstepTimer += Time.deltaTime;
 
             this.transform.rotation = Quaternion.LookRotation(Quaternion.Euler(Vector3.up * -90.0f)*m_Vel);
         }
         else
         {
             b_Running = false;
-
+            m_FootstepTimer = 0.0f;
             m_MeshFilter.mesh = m_StandMesh;
         }
 
@@ -153,6 +165,19 @@ public class Player : MonoBehaviour {
                 m_CurrentParticleID++;
                 m_CurrentParticleID %= c_NumRunParticles;
                 m_ParticleTimer -= m_ParticleSpawnInterval;
+            }
+
+            if (GroundShadingManager.Instance != null)
+            {
+                if (m_FootstepTimer >= c_FootstepTime)
+                {
+                    m_FootstepTimer -= c_FootstepTime;
+
+                    GameObject go = new GameObject();
+                    go.transform.position = Player.Instance.transform.position;
+                    //GroundShadingManager.AddEffect(Spot.CreateComponent(go, 2.0f, true));
+                    //this.BlitAtPosition(GroundShadingManager.WorldToUVSpace(go.transform.position), 1.0f, false);
+                }
             }
         }
 

@@ -37,8 +37,9 @@
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
-				fixed4 col = fixed4(0.9,0.9,0.9,1);
-				col.xyz = max(col.xyz - .2*unity_DeltaTime.x, fixed3(0.0,0.0,0.0));
+				fixed4 col = fixed4(1,1,1,1)-fixed4(1,1,1,0) * unity_DeltaTime.x * 5;
+
+				//col.xyz -= max(col.xyz *0.1*unity_DeltaTime.x, fixed3(0.0,0.0,0.0));
 											
 				return col;
 			}

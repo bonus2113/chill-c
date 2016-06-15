@@ -60,7 +60,15 @@
 				//sample the texture
 				fixed4 garden = tex2D(_GardenMap, i.uv);
 				fixed4 garden2 = tex2D(_GardenMap2, i.uv);
-				half4 col = tex2D(_MainTex, i.uv) * saturate(garden + garden2) * i.color;
+
+				//desat colour
+				half4 texColor = tex2D(_MainTex, i.uv) * i.color;
+				float  intensity = 0.3 * i.color.r + 0.59 * i.color.g + 0.11 * i.color.b;
+				intensity *= 0.2f;
+				half4 intensityColor = half4(intensity, intensity, intensity, 1);
+				half4 col = intensityColor + (texColor - intensityColor)*saturate(garden + garden2);
+				//half4 col = texColor * saturate(garden + garden2) * i.color;
+
 				//half4 col = frac(i.uv);
 				//half4 col = tex2D(_MainTex, i.uv);
 				float atten = LIGHT_ATTENUATION(i);

@@ -60,13 +60,12 @@ public class GroundShaderController : MonoBehaviour {
 
     }
 
-    public void BlitToUVPosition(Vector2 uv, float radiusUV)
+    public void BlitToUVPosition(Vector2 uv, float radiusUV, bool fade)
     {
         int radiusPixel = (int)(radiusUV * c_TexSize);
         m_BlitMaterial.SetVector("_PosSize", new Vector4((uv.x) * c_TexSize - radiusPixel/2, (uv.y) * c_TexSize - radiusPixel/2, radiusPixel, radiusPixel));
 
-
-        if (!Input.GetKey(KeyCode.Space))
+        if (fade)
         {
             Graphics.Blit(m_RadialGraphic, m_RenderTex, m_BlitMaterial);
         }
@@ -78,19 +77,22 @@ public class GroundShaderController : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-	
-	}
+
+        GroundShadingManager.RegisterSelf(this);
+    }
+
+    void Update()
+    {
+        Graphics.Blit(null, m_RenderTex, m_FadeMaterial);
+    }
 	
 	// Update is called once per frame
-	void Update () {
+	public void BlitAtPosition (Vector2 pos, float scale = 1.0f, bool fade = true) {
 
-        Vector2 playerPos = new Vector2(-Player.Instance.transform.position.x, -Player.Instance.transform.position.z);
-
-        Vector2 uvPos = playerPos / (m_HalfSize * 2.0f);
+        Vector2 uvPos = pos / (m_HalfSize * 2.0f);
         uvPos += new Vector2(0.5f, 0.5f);
 
-        BlitToUVPosition(uvPos + m_UVOffset, m_BlobSize);
-        Graphics.Blit(null, m_RenderTex, m_FadeMaterial);
+        BlitToUVPosition(uvPos + m_UVOffset, m_BlobSize * scale, fade);
     }
 
     void OnRenderObject()
