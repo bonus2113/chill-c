@@ -15,7 +15,8 @@ public class Spot : GroundFX {
 
     // Use this for initialization
     void Start () {
-        GroundShadingManager.Instance.BlitAtPosition(GroundShadingManager.WorldToUVSpace(this.transform.position), 2.0f, b_Fade);
+        m_Type = EffectTypes.SPOT;
+        GroundShadingManager.Instance.BlitEffectAtPosition(GroundFX.EffectTypes.SPOT, GroundShadingManager.WorldToUVSpace(this.transform.position), 2.0f, b_Fade);
         Destroy(this.gameObject, m_LifeTime);
 	}
 	// Update is called once per frame

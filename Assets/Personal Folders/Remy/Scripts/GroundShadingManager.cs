@@ -26,6 +26,9 @@ public class GroundShadingManager : MonoBehaviour {
         return new Vector2(-wordlPos.x, -wordlPos.z);
     }
 
+    public Texture2D m_RadialGraphic = null;
+    public Texture2D m_RíngGraphic = null;
+
     void Awake()
     {
         if (m_Instance != null)
@@ -47,24 +50,28 @@ public class GroundShadingManager : MonoBehaviour {
             Debug.Log("KEYDOWN");
             GameObject go = new GameObject();
             go.transform.position = Player.Instance.transform.position;
-            AddEffect(Spot.CreateComponent(go, 1.0f, true));
+            AddEffect(ScalingRing.CreateComponent(go, 1.0f, true, 0.0f, 1.0f));
             //this.BlitAtPosition(GroundShadingManager.WorldToUVSpace(go.transform.position), 1.0f, false);
         }
 
         //update effects
         foreach (var effect in m_Effects)
         {
+            if (effect == null)
+            {
+                continue;
+            }
             effect.UpdateEffect(Time.deltaTime);
         }
 
-        foreach (var ctrl in m_GroundShaders)
-        {
-            //blit player
-            ctrl.BlitAtPosition(playerPos, Mathf.Max(Player.Instance.VelocityNormalised + 0.5f, 0.75f), !Input.GetKey(KeyCode.Space));
-            //ctrl.BlitAtPosition(playerPos, 0.25f, false);
+        //foreach (var ctrl in m_GroundShaders)
+        //{
+        //    //blit player
+        //    ctrl.BlitGraphicToUVPosition(m_RadialGraphic, playerPos, Mathf.Max(Player.Instance.VelocityNormalised + 0.5f, 0.75f), !Input.GetKey(KeyCode.Space));
+        //    //ctrl.BlitAtPosition(playerPos, 0.25f, false);
 
-            //blit effects
-        }
+        //    //blit effects
+        //}
     }
 
     public static void AddEffect(GroundFX effect)
@@ -72,12 +79,34 @@ public class GroundShadingManager : MonoBehaviour {
         m_Effects.Add(effect);
     }
 
-    public void BlitAtPosition(Vector2 pos, float blobScale, bool fade)
+    public Texture2D GetTextureForEffect(GroundFX.EffectTypes type)
+    {
+        switch (type)
+        {
+            case GroundFX.EffectTypes.SPOT:
+                return m_RadialGraphic;
+            default:
+                return m_RadialGraphic;
+        }
+    }
+
+    public void BlitEffectAtPosition(GroundFX.EffectTypes type, Vector2 pos, float blobScale, bool fade)
     {
         foreach (var ctrl in m_GroundShaders)
         {
             //blit
-            ctrl.BlitAtPosition(pos, blobScale, fade);
+            switch (type)
+            {
+                case GroundFX.EffectTypes.SPOT:
+                    ctrl.BlitAtPosition(m_RadialGraphic, pos, blobScale, fade);
+                    break;
+                case GroundFX.EffectTypes.GROWING_RING:
+                    ctrl.BlitAtPosition(m_RíngGraphic, pos, blobScale, fade);
+                    break;
+                default:
+                    ctrl.BlitAtPosition(m_RadialGraphic, pos, blobScale, fade);
+                    break;
+            }
         }
     }
 }

@@ -72,7 +72,8 @@ public class Player : MonoBehaviour {
     private bool b_Colliding = false;
 
     private float m_FootstepTimer = 0.0f;
-    private const float c_FootstepTime = 0.2f;
+    private const float c_FootstepTime = 0.25f;
+    private bool b_LeftFoot = false;
 
     void Awake()
     {
@@ -174,9 +175,18 @@ public class Player : MonoBehaviour {
                     m_FootstepTimer -= c_FootstepTime;
 
                     GameObject go = new GameObject();
-                    go.transform.position = Player.Instance.transform.position;
-                    //GroundShadingManager.AddEffect(Spot.CreateComponent(go, 2.0f, true));
-                    //this.BlitAtPosition(GroundShadingManager.WorldToUVSpace(go.transform.position), 1.0f, false);
+                    go.transform.position = Player.Instance.transform.position + this.transform.right + ((b_LeftFoot)?this.transform.forward: -this.transform.forward) * 0.3f;
+                    GroundShadingManager.AddEffect(ScalingRing.CreateComponent(go, 1.5f, true, 0.2f, Random.Range(1.1f, 1.55f)));
+
+                    if (Input.GetKey(KeyCode.Space))
+                    {
+
+                        go = new GameObject();
+                        go.transform.position = Player.Instance.transform.position;
+
+                        GroundShadingManager.AddEffect(ScalingRing.CreateComponent(go, 1.0f + Random.Range(-0.3f, 0.3f), false, 0.1f, Mathf.Lerp(0.1f, 2.5f, this.VelocityNormalised)));
+                    }
+                    b_LeftFoot = !b_LeftFoot;
                 }
             }
         }

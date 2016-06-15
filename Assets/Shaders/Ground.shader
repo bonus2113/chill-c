@@ -64,8 +64,9 @@
 				//desat colour
 				half4 texColor = tex2D(_MainTex, i.uv) * i.color;
 				float  intensity = 0.3 * i.color.r + 0.59 * i.color.g + 0.11 * i.color.b;
-				intensity *= 0.2f;
+				//intensity *= 0.2f;
 				half4 intensityColor = half4(intensity, intensity, intensity, 1);
+				//half4 invertColor = half4(1, 1, 1, 2) - texColor;
 				half4 col = intensityColor + (texColor - intensityColor)*saturate(garden + garden2);
 				//half4 col = texColor * saturate(garden + garden2) * i.color;
 

@@ -10,9 +10,8 @@ public class GroundShaderController : MonoBehaviour {
     private RenderTexture m_RenderTex = null;
     private RenderTexture m_RenderTexNoFade = null;
 
-    public Texture2D m_RadialGraphic = null;
     private const float c_RadialUVSize = 0.01f;
-    private const int c_TexSize = 512;
+    private const int c_TexSize = 256;
 
     private float m_DebugTimer = 0.0f;
     private const float c_DebugInterval = 1.0f;
@@ -60,18 +59,18 @@ public class GroundShaderController : MonoBehaviour {
 
     }
 
-    public void BlitToUVPosition(Vector2 uv, float radiusUV, bool fade)
+    private void BlitGraphicToUVPosition(Texture2D graphic, Vector2 uv, float radiusUV, bool fade)
     {
         int radiusPixel = (int)(radiusUV * c_TexSize);
-        m_BlitMaterial.SetVector("_PosSize", new Vector4((uv.x) * c_TexSize - radiusPixel/2, (uv.y) * c_TexSize - radiusPixel/2, radiusPixel, radiusPixel));
+        m_BlitMaterial.SetVector("_PosSize", new Vector4((uv.x) * c_TexSize - radiusPixel / 2, (uv.y) * c_TexSize - radiusPixel / 2, radiusPixel, radiusPixel));
 
         if (fade)
         {
-            Graphics.Blit(m_RadialGraphic, m_RenderTex, m_BlitMaterial);
+            Graphics.Blit(graphic, m_RenderTex, m_BlitMaterial);
         }
         else
         {
-            Graphics.Blit(m_RadialGraphic, m_RenderTexNoFade, m_BlitMaterial);
+            Graphics.Blit(graphic, m_RenderTexNoFade, m_BlitMaterial);
         }
     }
 
@@ -85,14 +84,16 @@ public class GroundShaderController : MonoBehaviour {
     {
         Graphics.Blit(null, m_RenderTex, m_FadeMaterial);
     }
-	
-	// Update is called once per frame
-	public void BlitAtPosition (Vector2 pos, float scale = 1.0f, bool fade = true) {
+
+    // Update is called once per frame
+    public void BlitAtPosition(Texture2D graphic, Vector2 pos, float scale = 1.0f, bool fade = true)
+    {
 
         Vector2 uvPos = pos / (m_HalfSize * 2.0f);
         uvPos += new Vector2(0.5f, 0.5f);
 
-        BlitToUVPosition(uvPos + m_UVOffset, m_BlobSize * scale, fade);
+        //GroundShadingManager.Instance.BlitEffectAtPosition(GroundFX.EffectTypes.SPOT, uvPos + m_UVOffset, m_BlobSize * scale, fade);
+        this.BlitGraphicToUVPosition(graphic, uvPos + m_UVOffset, m_BlobSize * scale, fade);
     }
 
     void OnRenderObject()

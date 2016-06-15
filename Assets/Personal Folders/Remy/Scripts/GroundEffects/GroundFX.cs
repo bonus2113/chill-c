@@ -3,6 +3,14 @@ using System.Collections;
 
 public class GroundFX : MonoBehaviour {
 
+    public enum EffectTypes
+    {
+        UNKNOWN,
+        SPOT,
+        GROWING_RING
+    };
+
+    protected EffectTypes m_Type = EffectTypes.UNKNOWN;
     protected float m_Time = 0;
     protected float m_LifeTime = 1.0f;
     protected bool b_Fade = true;
