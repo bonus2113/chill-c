@@ -34,7 +34,7 @@ public class BigAssDoor : MonoBehaviour {
 
             if (m_Timer >= m_Duration)
             {
-                UnityEngine.Camera.main.GetComponent<Camera>().StopShake();
+                UnityEngine.Camera.main.GetComponent<GameCamera>().StopShake();
                 Destroy(this);
             }
         }
@@ -43,6 +43,6 @@ public class BigAssDoor : MonoBehaviour {
     void OnTriggerEnter(Collider col)
     {
         b_Triggered = true;
-        UnityEngine.Camera.main.GetComponent<Camera>().StartShake(10.0f, 0.1f);
+        UnityEngine.Camera.main.GetComponent<GameCamera>().StartShake(10.0f, 0.1f);
     }
 }
