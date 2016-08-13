@@ -15,7 +15,6 @@
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
-			// make fog work
 			#pragma multi_compile_fwdadd_fullshadows
 			
 			#include "UnityCG.cginc"

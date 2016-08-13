@@ -33,6 +33,14 @@ public class Player : MonoBehaviour {
         }
     }
 
+    public float VelocityNormalised
+    {
+        get
+        {
+            return m_Vel.magnitude/(c_Accel/c_Friction);
+        }
+    }
+
     private float m_AnimTimer = 0.0f;
     private float m_FramesPerSecond = 12.0f;
 
@@ -62,6 +70,10 @@ public class Player : MonoBehaviour {
 
     private Vector3 m_LastPos = Vector3.zero;
     private bool b_Colliding = false;
+
+    private float m_FootstepTimer = 0.0f;
+    private const float c_FootstepTime = 0.25f;
+    private bool b_LeftFoot = false;
 
     void Awake()
     {
@@ -114,23 +126,19 @@ public class Player : MonoBehaviour {
 
         m_Vel += inputDir * c_Accel * Time.deltaTime;
 
-        if (!b_Colliding)
-        {
-            this.m_LastPos = this.transform.position;
-            this.transform.position += m_Vel * Time.deltaTime;
-        }
         //m_RB.velocity = m_Vel;
 
         if (m_Vel.magnitude > 1.0f)
         {
             b_Running = true;
+            m_FootstepTimer += Time.deltaTime;
 
             this.transform.rotation = Quaternion.LookRotation(Quaternion.Euler(Vector3.up * -90.0f)*m_Vel);
         }
         else
         {
             b_Running = false;
-
+            m_FootstepTimer = 0.0f;
             m_MeshFilter.mesh = m_StandMesh;
         }
 
@@ -159,12 +167,47 @@ public class Player : MonoBehaviour {
                 m_CurrentParticleID %= c_NumRunParticles;
                 m_ParticleTimer -= m_ParticleSpawnInterval;
             }
+
+            if (GroundShadingManager.Instance != null)
+            {
+                if (m_FootstepTimer >= c_FootstepTime)
+                {
+                    m_FootstepTimer -= c_FootstepTime;
+
+                    GameObject go = new GameObject();
+                    go.transform.position = Player.Instance.transform.position + this.transform.right + ((b_LeftFoot)?this.transform.forward: -this.transform.forward) * 0.3f;
+                    GroundShadingManager.AddEffect(ScalingRing.CreateComponent(go, 1.5f, true, 0.2f, Random.Range(1.1f, 1.55f)));
+
+                    if (Input.GetKey(KeyCode.Space))
+                    {
+
+                        go = new GameObject();
+                        go.transform.position = Player.Instance.transform.position;
+
+                        GroundShadingManager.AddEffect(ScalingRing.CreateComponent(go, 1.0f + Random.Range(-0.3f, 0.3f), false, 0.1f, Mathf.Lerp(0.1f, 2.5f, this.VelocityNormalised)));
+                    }
+                    b_LeftFoot = !b_LeftFoot;
+                }
+            }
+        }
+
+        m_RB.velocity = Vector3.zero;
+        m_RB.angularVelocity = Vector3.zero;
+    }
+
+    void FixedUpdate()
+    {
+        if (!b_Colliding)
+        {
+            this.m_LastPos = this.transform.position;
+            //this.transform.position += m_Vel * Time.deltaTime;
+            this.m_RB.MovePosition(this.transform.position + m_Vel * Time.fixedDeltaTime);
         }
     }
 
     void OnCollisionExit(Collision colInfo)
     {
-        //Debug.Log("Not COlliding");
+        Debug.Log("Not COlliding");
 
         b_Colliding = false;
     }
@@ -172,9 +215,11 @@ public class Player : MonoBehaviour {
     void OnCollisionEnter(Collision colInfo)
     {
         b_Colliding = true;
-        //Debug.Log("COlliding");
-        m_LastPos += colInfo.contacts[0].normal * 0.1f;
-        this.transform.position = m_LastPos;
+        Debug.Log("COlliding: " + colInfo.gameObject.name);
+        Vector3 colNormal = colInfo.contacts[0].normal * Time.deltaTime;
+        colNormal.y = 0.0f;
+        //m_LastPos += -colInfo.relativeVelocity * Time.maximumDeltaTime;
+        this.transform.position = m_LastPos + colNormal;
         m_Vel = Vector3.zero;
 
         //Vector3.Reflect(m_Vel, colInfo.contacts[0].normal);
