@@ -12,15 +12,6 @@ public class FountainSimulate : MonoBehaviour {
     public Color col;
   }
 
-  struct DrawIndirectCommand
-  {
-    public int VertexCountPerInstance;
-    public int InstanceCount;
-    public int StartVertexLocation;
-    public int StartInstanceLocation;
-  }
-
-
   public ComputeShader SimulateShader;
   public int Resolution;
   public ParticleSystem particlesToRender;
@@ -28,9 +19,7 @@ public class FountainSimulate : MonoBehaviour {
   public Shader ParticleShader;
 
   Material particleMaterial;
-  RenderTexture densityTex;
   int generatePointsKernel;
-  MeshRenderer meshRend;
 
   ParticleSystem.Particle[] particles;
 
