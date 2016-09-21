@@ -1,8 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UniRx;
+using UniRx.Triggers;
 
 using System.Collections.Generic;
 
+[RequireComponent(typeof(CharacterController))]
 public class Player : MonoBehaviour {
 
     private const float c_Accel = 100.0f;
@@ -66,14 +69,10 @@ public class Player : MonoBehaviour {
     private float m_ParticleSpawnInterval = 1.0f / 20.0f;
     private int m_CurrentParticleID = 0;
 
-    private Rigidbody m_RB = null;
-
-    private Vector3 m_LastPos = Vector3.zero;
-    private bool b_Colliding = false;
+    private CharacterController m_CharacterController = null;
 
     private float m_FootstepTimer = 0.0f;
     private const float c_FootstepTime = 0.25f;
-    private bool b_LeftFoot = false;
 
     void Awake()
     {
@@ -99,23 +98,20 @@ public class Player : MonoBehaviour {
             m_ParticlePool.Add(go);
         }
 
-        this.m_RB = this.GetComponent<Rigidbody>();
+        this.m_CharacterController = this.GetComponent<CharacterController>();
     }
 
 	// Use this for initialization
 	void Start () {
+
+        RxInputs.Instance.MoveInputs.Subscribe(rxinput => ProcessInput(rxinput));
+
 	}
-	
-	// Update is called once per frame
-	void Update () {
 
-        //m_Vel = m_RB.velocity;
-
+    private void ProcessInput(RxInputs.MovementInputs input)
+    {
         //Movement
-        float right = (Input.GetKey(KeyCode.A) ? -1.0f : 0.0f) + (Input.GetKey(KeyCode.D) ? 1.0f : 0.0f);
-        float forward = (Input.GetKey(KeyCode.S) ? -1.0f : 0.0f) + (Input.GetKey(KeyCode.W) ? 1.0f : 0.0f);
-
-        Vector3 inputDir = new Vector3(right, 0.0f, forward).normalized;
+        Vector3 inputDir = new Vector3(input.Direction2D.x, 0.0f, input.Direction2D.y).normalized;
 
         if (inputDir != Vector3.zero)
         {
@@ -133,7 +129,7 @@ public class Player : MonoBehaviour {
             b_Running = true;
             m_FootstepTimer += Time.deltaTime;
 
-            this.transform.rotation = Quaternion.LookRotation(Quaternion.Euler(Vector3.up * -90.0f)*m_Vel);
+            this.transform.rotation = Quaternion.LookRotation(Quaternion.Euler(Vector3.up * -90.0f) * m_Vel);
         }
         else
         {
@@ -141,6 +137,8 @@ public class Player : MonoBehaviour {
             m_FootstepTimer = 0.0f;
             m_MeshFilter.mesh = m_StandMesh;
         }
+
+        m_CharacterController.Move((m_Vel + Physics.gravity) * Time.fixedDeltaTime);
 
         //animation
 
@@ -167,61 +165,13 @@ public class Player : MonoBehaviour {
                 m_CurrentParticleID %= c_NumRunParticles;
                 m_ParticleTimer -= m_ParticleSpawnInterval;
             }
-
-            if (GroundShadingManager.Instance != null)
-            {
-                if (m_FootstepTimer >= c_FootstepTime)
-                {
-                    m_FootstepTimer -= c_FootstepTime;
-
-                    GameObject go = new GameObject();
-                    go.transform.position = Player.Instance.transform.position + this.transform.right + ((b_LeftFoot)?this.transform.forward: -this.transform.forward) * 0.3f;
-                    GroundShadingManager.AddEffect(ScalingRing.CreateComponent(go, 1.5f, true, 0.2f, Random.Range(1.1f, 1.55f)));
-
-                    if (Input.GetKey(KeyCode.Space))
-                    {
-
-                        go = new GameObject();
-                        go.transform.position = Player.Instance.transform.position;
-
-                        GroundShadingManager.AddEffect(ScalingRing.CreateComponent(go, 1.0f + Random.Range(-0.3f, 0.3f), false, 0.1f, Mathf.Lerp(0.1f, 2.5f, this.VelocityNormalised)));
-                    }
-                    b_LeftFoot = !b_LeftFoot;
-                }
-            }
-        }
-
-        m_RB.velocity = Vector3.zero;
-        m_RB.angularVelocity = Vector3.zero;
-    }
-
-    void FixedUpdate()
-    {
-        if (!b_Colliding)
-        {
-            this.m_LastPos = this.transform.position;
-            //this.transform.position += m_Vel * Time.deltaTime;
-            this.m_RB.MovePosition(this.transform.position + m_Vel * Time.fixedDeltaTime);
         }
     }
+	
+	// Update is called once per frame
+	void Update () {
 
-    void OnCollisionExit(Collision colInfo)
-    {
-        Debug.Log("Not COlliding");
 
-        b_Colliding = false;
-    }
-
-    void OnCollisionEnter(Collision colInfo)
-    {
-        b_Colliding = true;
-        Debug.Log("COlliding: " + colInfo.gameObject.name);
-        Vector3 colNormal = colInfo.contacts[0].normal * Time.deltaTime;
-        colNormal.y = 0.0f;
-        //m_LastPos += -colInfo.relativeVelocity * Time.maximumDeltaTime;
-        this.transform.position = m_LastPos + colNormal;
-        m_Vel = Vector3.zero;
-
-        //Vector3.Reflect(m_Vel, colInfo.contacts[0].normal);
     }
 }
+ 

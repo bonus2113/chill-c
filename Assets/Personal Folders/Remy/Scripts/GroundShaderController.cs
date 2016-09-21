@@ -13,7 +13,6 @@ public class GroundShaderController : MonoBehaviour {
     private const float c_RadialUVSize = 0.01f;
     private const int c_TexSize = 256;
 
-    private float m_DebugTimer = 0.0f;
     private const float c_DebugInterval = 1.0f;
 
     private float m_HalfSize = 5.0f;

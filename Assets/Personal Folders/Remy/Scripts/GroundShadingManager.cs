@@ -42,9 +42,6 @@ public class GroundShadingManager : MonoBehaviour {
 
     void Update()
     {
-
-        Vector2 playerPos = new Vector2(-Player.Instance.transform.position.x, -Player.Instance.transform.position.z);
-
         if (Input.GetKeyDown(KeyCode.P))
         {
             Debug.Log("KEYDOWN");
