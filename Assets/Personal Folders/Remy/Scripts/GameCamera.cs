@@ -15,7 +15,6 @@ public class GameCamera : MonoBehaviour {
     private const float m_ZoomRate = 1.0f;
 
     private bool b_Shaking = false;
-    private float m_ShakeIntensity = 1.0f;
     private float m_ShakeTimer = 0.0f;
     private float m_ShakeMaxMagnitude = 1.0f;
     private float m_ShakeInterval = 0.0f;

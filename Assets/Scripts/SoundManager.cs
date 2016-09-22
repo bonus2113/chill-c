@@ -19,6 +19,7 @@ public class SoundManager : MonoBehaviour
 
     private AudioSource m_ambientLoop = null;
     private AudioSource m_theme = null;
+    private AudioSource m_ThemeIntro = null;
     private bool m_loopingPlaying = false;
 
 
@@ -60,6 +61,9 @@ public class SoundManager : MonoBehaviour
         this.m_ambientLoop.loop = true;
         this.m_ambientLoop.volume = 0.3f;
 
+        this.m_ThemeIntro = this.gameObject.AddComponent<AudioSource>();
+        this.m_ThemeIntro.clip = themeIntro;
+
         this.m_theme = this.gameObject.AddComponent<AudioSource>();
         this.m_theme.clip = themeLoop;
         this.m_theme.loop = true;
@@ -84,8 +88,9 @@ public class SoundManager : MonoBehaviour
             return;
 
         m_loopingPlaying = true;
-        SoundManager.Instance.m_ambientLoop.Play();
-        SoundManager.Instance.m_theme.Play();
+        this.m_ambientLoop.Play();
+        this.m_ThemeIntro.Play();
+        this.m_theme.PlayDelayed(themeIntro.length);
     }
 
 
