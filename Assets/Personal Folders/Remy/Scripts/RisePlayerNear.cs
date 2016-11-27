@@ -22,15 +22,16 @@ public class RisePlayerNear : ReactOnPlayerNear {
     private const float c_MaximumClickRange = 5.0f;
 
     // Use this for initialization
-    void Start () {
+    protected override void Start () {
+        base.Start();
 
         m_StartPos = this.transform.position;
         Events.Instance.AddListener<WormEvents.WormClicked>(OnWormClicked);
 	}
 	
 	// Update is called once per frame
-	protected override void Update () {
-        base.Update();
+	public override void UpdateMe() {
+        base.UpdateMe();
 
         if (!b_TriggerClickBehaviour)
         {

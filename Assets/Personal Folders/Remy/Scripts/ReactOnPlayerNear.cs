@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class ReactOnPlayerNear : MonoBehaviour {
+public class ReactOnPlayerNear : MonoBehaviour, GridUpdateManager.IGridObject {
 
     public float m_ActivationDistance = 10.0f;
 
@@ -10,12 +10,13 @@ public class ReactOnPlayerNear : MonoBehaviour {
     protected bool b_PlayerNear = false;
 
 	// Use this for initialization
-	void Start () {
-	
+	protected virtual void Start () {
+
+        GridUpdateManager.Instance.RegisterInGrid(this.transform);
 	}
 
     // Update is called once per frame
-    protected virtual void Update() {
+    public virtual void UpdateMe() {
 
         Vector3 myPos = this.transform.position;
         myPos.y = 0.0f;
