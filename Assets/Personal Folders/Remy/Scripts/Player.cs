@@ -19,6 +19,9 @@ public class Player : MonoBehaviour {
 
     private MeshFilter m_MeshFilter = null;
 
+    [SerializeField]
+    private Texture2D m_FloorTexture = null;
+
     private static Player m_Instance = null;
     public static Player Instance
     {
@@ -89,6 +92,7 @@ public class Player : MonoBehaviour {
 
         //init particlePool
         m_ParticleRoot = new GameObject().transform;
+        m_ParticleRoot.name = "RunParticleRoot";
 
         for (int i = 0; i < c_NumRunParticles; i++)
         {
@@ -157,10 +161,21 @@ public class Player : MonoBehaviour {
             }
             //particle
 
+            //get color at position
+            Color? floorColor = null;
+            if (m_FloorTexture != null)
+            {
+                RaycastHit hitInfo;
+                if (Physics.Raycast(this.transform.position + Vector3.up, Vector3.down, out hitInfo, 5.0f, (1 << LayerMask.NameToLayer("GroundRaycast"))))
+                {
+                    floorColor = m_FloorTexture.GetPixelBilinear(hitInfo.textureCoord.x, hitInfo.textureCoord.y);
+                }
+            }
+                
             m_ParticleTimer += Time.deltaTime;
             if (m_ParticleTimer >= m_ParticleSpawnInterval)
             {
-                m_ParticlePool[m_CurrentParticleID].GetComponent<RunParticle>().Activate(m_Vel);
+                m_ParticlePool[m_CurrentParticleID].GetComponent<RunParticle>().Activate(m_Vel, floorColor);
                 m_CurrentParticleID++;
                 m_CurrentParticleID %= c_NumRunParticles;
                 m_ParticleTimer -= m_ParticleSpawnInterval;
