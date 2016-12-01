@@ -12,6 +12,9 @@ public class SwarmIndividual : MonoBehaviour
   public float followMultiplier = 1.0f;
   public float avoidanceLookahead = 1.0f;
 
+  public Transform WingTransformLeft;
+  public Transform WingTransformRight;
+
   public float maxSpeed = 0.8f;
 
   private Rigidbody body;
@@ -213,6 +216,8 @@ public class SwarmIndividual : MonoBehaviour
     }
   }
 
+  float wingState = 0.0f;
+
   // Update is called once per frame
   void FixedUpdate()
   {
@@ -220,9 +225,30 @@ public class SwarmIndividual : MonoBehaviour
     if (state == State.Stationary)
     {
       body.velocity = Vector3.zero;
+      wingState += Time.fixedDeltaTime * 0.7f;
+
+      var wingLeftRot = WingTransformRight.localEulerAngles;
+      wingLeftRot.x = Mathf.LerpAngle(100.0f, 170.0f, Mathf.Sin(wingState) * 0.15f + 0.25f);
+      WingTransformLeft.localEulerAngles = wingLeftRot;
+
+      var wingRightRot = WingTransformRight.localEulerAngles;
+      wingRightRot.x = Mathf.LerpAngle(80.0f, 10.0f, Mathf.Sin(wingState) * 0.15f + 0.75f);
+      WingTransformRight.localEulerAngles = wingRightRot;
+
       return;
     }
 
+    {
+      var wingLeftRot = WingTransformRight.localEulerAngles;
+      wingLeftRot.x = Mathf.LerpAngle(100.0f, 170.0f, Mathf.Sin(wingState) * 0.5f + 0.5f);
+      if (wingLeftRot.x < 125.0f) wingLeftRot.x = 100.0f; else if (wingLeftRot.x < 145.0f) wingLeftRot.x = 125.0f; else wingLeftRot.x = 170.0f;
+      WingTransformLeft.localEulerAngles = wingLeftRot;
+
+      var wingRightRot = WingTransformRight.localEulerAngles;
+      wingRightRot.x = Mathf.LerpAngle(80.0f, 10.0f, Mathf.Sin(wingState) * 0.5f + 0.5f);
+      if (wingRightRot.x < 35.0f) wingRightRot.x = 10.0f; else if (wingRightRot.x < 55.0f) wingRightRot.x = 35.0f; else wingRightRot.x = 80.0f;
+      WingTransformRight.localEulerAngles = wingRightRot;
+    }
 
     neighbourhoodCount = Physics.OverlapSphereNonAlloc(transform.position, watchDistance, neighbourhood, 1 << gameObject.layer);
 
@@ -233,10 +259,11 @@ public class SwarmIndividual : MonoBehaviour
     Vector3 attract = attractors();
 
     float seperationFactor = 1.0f;
-    float alignmentFactor  = 1.0f;
-    float coherenceFactor  = 1.0f;
-    float avoidanceFactor  = 1.0f;
-    float attractorFactor  = 1.0f;
+    float alignmentFactor = 1.0f;
+    float coherenceFactor = 1.0f;
+    float avoidanceFactor = 1.0f;
+    float attractorFactor = 1.0f;
+    float straightFactor = 0.0f;
 
     Vector3 impulse = Vector3.zero;
 
@@ -249,7 +276,7 @@ public class SwarmIndividual : MonoBehaviour
 
     confusedCurrentDir = Vector3.SmoothDamp(confusedCurrentDir, confusedTargetDir, ref confusedCurrentVel, 0.5f);
 
-    if(state == State.Landing)
+    if (state == State.Landing)
     {
       coherenceFactor = 0;
       seperationFactor = 0;
@@ -259,7 +286,11 @@ public class SwarmIndividual : MonoBehaviour
       Vector3 landingDir = landingPos - transform.position;
       impulse += Vector3.ClampMagnitude(landingDir, 1.0f) * 0.05f;
       if (landingDir.magnitude < 2) avoidanceFactor = 0;
-      if (landingDir.magnitude < 0.1f) state = State.Stationary;
+      if (landingDir.magnitude < 3.4f) straightFactor = 1.0f - landingDir.magnitude / 3.4f;
+      if (landingDir.magnitude < 0.1f)
+      {
+        state = State.Stationary;
+      }
     }
     else
     {
@@ -282,9 +313,21 @@ public class SwarmIndividual : MonoBehaviour
 
     impulse += sep * seperationFactor + align * alignmentFactor + cohe * coherenceFactor + avoid * avoidanceFactor + attractorFactor * attract;
 
+
+
+
     body.AddForce(impulse, ForceMode.VelocityChange);
-    transform.forward = body.velocity;
 
     body.velocity = Vector3.ClampMagnitude(body.velocity, maxSpeed);
+
+    wingState +=  (Mathf.Max(0, body.velocity.y + impulse.y) + 0.4f) * Time.fixedDeltaTime * 20.0f ;
+
+
+
+    if (body.velocity.magnitude > 0.05f)
+    {
+      var straightVel = Vector3.ProjectOnPlane(body.velocity, Vector3.up);
+      transform.LookAt( transform.position + Vector3.Slerp(transform.forward, (body.velocity.normalized * (1.0f- straightFactor) + straightVel * straightFactor), 10.0f * Time.fixedDeltaTime) , Vector3.up);
+    }
   }
 }
