@@ -35,17 +35,18 @@ void GeneratePoints (uint3 id : SV_DispatchThreadID)
 	float3 cellSize = mul(Object2World, float4(1.0/Resolution, 1.0/Resolution, 1.0/Resolution, 1)).xyz;
 
 	float4 color;
+	float particleNum = 0;
 	for(uint i = 0; i < particleCount; i++) {
 		Particle particle = Particles.Load(i);
 		float dist = length(cellPos - particle.pos);
 		if(dist < 0.08) {
 			color += particle.col;
+			particleNum++;
 		}
 	}
 
 	if(color.a != 0) {
-		color /= color.a;
-		color.a = 1;
+		color /= particleNum;
 
 
 		CellInformation cell;
