@@ -17,7 +17,16 @@ public class RunParticle : MonoBehaviour {
 
     private float m_StartScale = 1.0f;
 
+    [SerializeField]
+    private Color m_DefaultColor;
+    private Color m_StartColor = Color.black;
+
     public AnimationCurve m_ScaleCurve;
+
+    void Awake()
+    {
+        m_StartColor = this.GetComponentInChildren<Renderer>().material.color;
+    }
 
     void OnEnable()
     {
@@ -37,7 +46,7 @@ public class RunParticle : MonoBehaviour {
 
     }
 
-    public void Activate(Vector3 playerVel)
+    public void Activate(Vector3 playerVel, Color? col = null)
     {
         this.gameObject.SetActive(true);
         Vector3 dir = -playerVel * Random.Range(m_MinMaxPlayerVelFactor.x, m_MinMaxPlayerVelFactor.y);
@@ -45,16 +54,32 @@ public class RunParticle : MonoBehaviour {
         dir = Quaternion.Euler(Vector3.up * Random.Range(-m_MaxRightDeviation, m_MaxRightDeviation)) * dir;
         dir.y += Random.Range(0.0f, m_MaxUpVelocity);
 
+        if (col != null)
+        {
+            this.SetColorWithOffset(col.Value);
+        }
+        else
+        {
+            this.SetColor(m_DefaultColor);
+        }
+
         this.m_Direction = dir;
     }
 
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
+    private void SetColor(Color col)
+    {
+        var childMat = this.GetComponentInChildren<Renderer>().material;
+        childMat.SetColor("_Color", col);
+    }
+
+    private void SetColorWithOffset(Color col)
+    {
+        var childMat = this.GetComponentInChildren<Renderer>().material;
+        childMat.SetColor("_Color", col + m_StartColor);
+    }
+
+    // Update is called once per frame
+    void Update () {
 
         m_Timer += Time.deltaTime;
 

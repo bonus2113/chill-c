@@ -131,7 +131,7 @@ public class FountainSimulate : MonoBehaviour {
       buf.name = "VoxelParticles";
       cameras[cam] = buf;
 
-      cam.AddCommandBuffer(CameraEvent.BeforeForwardOpaque, buf);
+      cam.AddCommandBuffer(CameraEvent.BeforeForwardAlpha, buf);
     }
 
     ComputeBuffer.CopyCount(pointBuffer, drawIndirectCmdBuffer, 4);

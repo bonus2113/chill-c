@@ -11,6 +11,11 @@ public class ReactOnPlayerNear : MonoBehaviour, GridUpdateManager.IGridObject {
 
 	// Use this for initialization
 	protected virtual void Start () {
+        if (GridUpdateManager.Instance == null)
+        {
+            Destroy(this);
+            return;
+        }
 
         GridUpdateManager.Instance.RegisterInGrid(this.transform);
 	}
