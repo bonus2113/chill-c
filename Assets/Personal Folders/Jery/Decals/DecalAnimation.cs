@@ -24,6 +24,8 @@ public class DecalAnimation : MonoBehaviour {
         mat = GetComponent<MeshRenderer>().material;
         tex = mat.mainTexture as Texture2D;
         size = mat.mainTexture.width / 4;
+
+        mat.SetFloat("_Cutoff", 0f);
     }
 
     void Update()
@@ -51,13 +53,18 @@ public class DecalAnimation : MonoBehaviour {
         }
     }
 
-    public Vector3 GetStartPosition(int i)
+    public Vector3 GetLocalStartPosition(int i)
     {
         // clone part of texture
         int x = (int)map[i * 2];
         int y = (int)map[i * 2 + 1];
         Vector3 s = transform.localScale;
         return new Vector3(s.x * -0.3725f + x * 0.25f * s.x, s.y * -0.3725f + y * 0.25f * s.y, -1.0f * s.z);
+    }
+
+    public Vector3 GetStartPosition(int i)
+    {
+        return GetLocalStartPosition(i) + transform.position;
     }
 
     public void AnimateRunepart(int i)
@@ -73,7 +80,7 @@ public class DecalAnimation : MonoBehaviour {
         // create mesh
         GameObject obj = (GameObject)GameObject.Instantiate(animationPrefab);
         obj.transform.parent = transform;
-        obj.transform.localPosition = GetStartPosition(i);
+        obj.transform.localPosition = GetLocalStartPosition(i);
         obj.GetComponent<MeshRenderer>().material.SetTexture("_MainTex", part as Texture);
         parts.Add(obj);
         zspeeds.Add(1.2f);
