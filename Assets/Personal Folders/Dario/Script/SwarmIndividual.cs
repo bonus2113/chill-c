@@ -225,10 +225,30 @@ public class SwarmIndividual : MonoBehaviour
     if (state == State.Stationary)
     {
       body.velocity = Vector3.zero;
-      transform.Rotate(Vector3.right, Vector3.Angle(transform.up, Vector3.up) * Time.fixedDeltaTime * 2.0f, Space.Self);
+      wingState += Time.fixedDeltaTime * 0.7f;
+
+      var wingLeftRot = WingTransformRight.localEulerAngles;
+      wingLeftRot.x = Mathf.LerpAngle(100.0f, 170.0f, Mathf.Sin(wingState) * 0.15f + 0.25f);
+      WingTransformLeft.localEulerAngles = wingLeftRot;
+
+      var wingRightRot = WingTransformRight.localEulerAngles;
+      wingRightRot.x = Mathf.LerpAngle(80.0f, 10.0f, Mathf.Sin(wingState) * 0.15f + 0.75f);
+      WingTransformRight.localEulerAngles = wingRightRot;
+
       return;
     }
 
+    {
+      var wingLeftRot = WingTransformRight.localEulerAngles;
+      wingLeftRot.x = Mathf.LerpAngle(100.0f, 170.0f, Mathf.Sin(wingState) * 0.5f + 0.5f);
+      if (wingLeftRot.x < 125.0f) wingLeftRot.x = 100.0f; else if (wingLeftRot.x < 145.0f) wingLeftRot.x = 125.0f; else wingLeftRot.x = 170.0f;
+      WingTransformLeft.localEulerAngles = wingLeftRot;
+
+      var wingRightRot = WingTransformRight.localEulerAngles;
+      wingRightRot.x = Mathf.LerpAngle(80.0f, 10.0f, Mathf.Sin(wingState) * 0.5f + 0.5f);
+      if (wingRightRot.x < 35.0f) wingRightRot.x = 10.0f; else if (wingRightRot.x < 55.0f) wingRightRot.x = 35.0f; else wingRightRot.x = 80.0f;
+      WingTransformRight.localEulerAngles = wingRightRot;
+    }
 
     neighbourhoodCount = Physics.OverlapSphereNonAlloc(transform.position, watchDistance, neighbourhood, 1 << gameObject.layer);
 
@@ -302,15 +322,7 @@ public class SwarmIndividual : MonoBehaviour
 
     wingState +=  (Mathf.Max(0, body.velocity.y + impulse.y) + 0.4f) * Time.fixedDeltaTime * 20.0f ;
 
-    var wingLeftRot = WingTransformRight.localEulerAngles;
-    wingLeftRot.x = Mathf.LerpAngle(100.0f, 170.0f, Mathf.Sin(wingState) * 0.5f + 0.5f);
-    if (wingLeftRot.x < 125.0f) wingLeftRot.x = 100.0f; else if (wingLeftRot.x < 145.0f) wingLeftRot.x = 125.0f;  else wingLeftRot.x = 170.0f;
-    WingTransformLeft.localEulerAngles = wingLeftRot;
 
-    var wingRightRot = WingTransformRight.localEulerAngles;
-    wingRightRot.x = Mathf.LerpAngle(80.0f, 10.0f, Mathf.Sin(wingState) * 0.5f + 0.5f);
-    if (wingRightRot.x < 35.0f) wingRightRot.x = 10.0f; else if (wingRightRot.x < 55.0f) wingRightRot.x = 35.0f; else wingRightRot.x = 80.0f;
-    WingTransformRight.localEulerAngles = wingRightRot;
 
     if (body.velocity.magnitude > 0.05f)
     {
