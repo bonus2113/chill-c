@@ -38,11 +38,11 @@ public class GroundShaderController : MonoBehaviour {
         this.m_Material = this.GetComponent<Renderer>().material;
         m_RenderTex = new RenderTexture(c_TexSize, c_TexSize, 0, RenderTextureFormat.ARGB32);
         m_RenderTex.useMipMap = false;
-        m_RenderTex.generateMips = false;
+        m_RenderTex.autoGenerateMips = false;
 
         m_RenderTexNoFade = new RenderTexture(c_TexSize, c_TexSize, 0, RenderTextureFormat.ARGB32);
         m_RenderTexNoFade.useMipMap = false;
-        m_RenderTexNoFade.generateMips = false;
+        m_RenderTexNoFade.autoGenerateMips = false;
 
         m_RenderTex.Create();
         m_RenderTexNoFade.Create();
