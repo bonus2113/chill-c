@@ -170,6 +170,21 @@ public class SwarmIndividual : MonoBehaviour
     return res;
   }
 
+  Vector3 attractors()
+  {
+    Vector3 res = Vector3.zero;
+    var colls = Physics.OverlapSphere(transform.position, 30, 1 << LayerMask.NameToLayer("BoidTractor"));
+    foreach(var coll in colls)
+    {
+      BoidAttractor attr = coll.GetComponent<BoidAttractor>();
+      if(attr)
+      {
+        res -= attr.strength * Vector3.ClampMagnitude(transform.position - attr.transform.position, 0.002f);
+      }
+    }
+    return res;
+  }
+
   float confusedTimer = 0;
   Vector3 confusedTargetDir = Vector3.zero;
   Vector3 confusedCurrentDir = Vector3.zero;
@@ -215,11 +230,13 @@ public class SwarmIndividual : MonoBehaviour
     Vector3 align = alignment();
     Vector3 cohe = cohesion();
     Vector3 avoid = avoidance();
+    Vector3 attract = attractors();
 
     float seperationFactor = 1.0f;
     float alignmentFactor  = 1.0f;
     float coherenceFactor  = 1.0f;
     float avoidanceFactor  = 1.0f;
+    float attractorFactor  = 1.0f;
 
     Vector3 impulse = Vector3.zero;
 
@@ -237,7 +254,8 @@ public class SwarmIndividual : MonoBehaviour
       coherenceFactor = 0;
       seperationFactor = 0;
       alignmentFactor = 0.1f;
-      avoidanceFactor = 0.5f;
+      avoidanceFactor = 0.8f;
+      attractorFactor = 0.0f;
       Vector3 landingDir = landingPos - transform.position;
       impulse += Vector3.ClampMagnitude(landingDir, 1.0f) * 0.05f;
       if (landingDir.magnitude < 2) avoidanceFactor = 0;
@@ -262,7 +280,7 @@ public class SwarmIndividual : MonoBehaviour
       }
     }
 
-    impulse += sep * seperationFactor + align * alignmentFactor + cohe * coherenceFactor + avoid * avoidanceFactor;
+    impulse += sep * seperationFactor + align * alignmentFactor + cohe * coherenceFactor + avoid * avoidanceFactor + attractorFactor * attract;
 
     body.AddForce(impulse, ForceMode.VelocityChange);
     transform.forward = body.velocity;
