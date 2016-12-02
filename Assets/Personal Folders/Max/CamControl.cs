@@ -29,7 +29,9 @@ public class CamControl : MonoBehaviour {
         FollowRail = 3
     };
     public CamState m_CamState = CamState.TopDown;
-    private Vector3 m_DefualtOffset = new Vector3(0, 7, -10);
+    public AnimationCurve m_CamHeightCurve = new AnimationCurve(new Keyframe(0, 3), new Keyframe(5, 0));
+    private Vector3 m_DefualtTopDownOffset = new Vector3(0, 7, -10);
+    private Quaternion m_DefualtTopDownRotation = new Quaternion(0.3f,0f,0f,1f);
 
     private const float c_CamSpeed = 2.0f;
     private Vector3 m_Offset = Vector3.zero;
@@ -45,7 +47,8 @@ public class CamControl : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        m_Offset = m_DefualtOffset;
+        m_Offset = m_DefualtTopDownOffset;
+        transform.rotation = m_DefualtTopDownRotation;
         SetCamFollow(Vector3.up*3, 0.4f);
     }
 	// Update is called once per frame
@@ -85,18 +88,21 @@ public class CamControl : MonoBehaviour {
         this.transform.forward = Vector3.Slerp(m_StaticShot.forward, targetLookRotation, m_CameraDrift);
     }
     void FollowPlayer() {
-        if (Vector3.Distance(m_FollowPoints[0], Player.Instance.transform.position) > 1) {
-            m_FollowPoints.Insert(0, Player.Instance.transform.position);
+        Vector3 playerPos = Player.Instance.transform.position;
+        if (Vector3.Distance(m_FollowPoints[0], playerPos) > 1) {
+            m_FollowPoints.Insert(0, playerPos);
             if(m_FollowPoints.Count > 7) {
                 m_FollowPoints.RemoveAt(7);
             }
         }
         if (m_FollowPoints.Count > 2) {
-            Vector3 targetPos = m_FollowPoints[m_FollowPoints.Count - 1] + m_Offset;
-            this.transform.position += (targetPos - this.transform.position) * c_CamSpeed * Time.deltaTime;
-            Vector3 dirToPlayer = (Player.Instance.transform.position - this.transform.position).normalized;
+            Vector3 dirToPlayer = (playerPos - this.transform.position).normalized;
             Quaternion targetRot = Quaternion.LookRotation(dirToPlayer);
             this.transform.rotation = Quaternion.Slerp(this.transform.rotation, targetRot, (m_CameraDrift * Mathf.PI * 2.0f) * Time.deltaTime);
+            Vector3 targetPos = m_FollowPoints[m_FollowPoints.Count - 1] + m_Offset;
+            playerPos.y = transform.position.y;
+            targetPos.y += m_CamHeightCurve.Evaluate(Vector3.Distance(transform.position, playerPos));
+            this.transform.position += (targetPos - this.transform.position) * c_CamSpeed * Time.deltaTime;
         }
     }
     void FollowRail() {
@@ -123,8 +129,9 @@ public class CamControl : MonoBehaviour {
         if(offset != Vector3.zero) {
             m_Offset = offset;
         } else {
-            m_Offset = m_DefualtOffset;
+            m_Offset = m_DefualtTopDownOffset;
         }
+        transform.rotation = m_DefualtTopDownRotation;
     }
     public void SetCamStaticShot (Transform camPosAndRot, float drift) {
         m_CamState = CamState.StaticShot;
