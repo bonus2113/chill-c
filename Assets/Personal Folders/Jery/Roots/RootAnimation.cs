@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RootAnimation : MonoBehaviour {
+public class RootAnimation : ReactOnPlayerNear {
 
     GameObject player;
     public GameObject target;
-    public GameObject voxel;
+    public GameObject voxel1, voxel2;
 
     public List<Vector3> path = new List<Vector3>();
     Mesh mesh;
@@ -15,8 +15,9 @@ public class RootAnimation : MonoBehaviour {
     public float distanceRange = 20f;
     public float distanceCutoff = 10f;
 
-    void Start()
+    protected override void Start()
     {
+        base.Start();
         player = Player.Instance.gameObject;
     }
 
@@ -58,15 +59,18 @@ public class RootAnimation : MonoBehaviour {
 
         for(int i = 0; i < voxels.Count; i++)
         {
-            GameObject v = (GameObject)GameObject.Instantiate(voxel, voxels[i], Quaternion.identity, transform);
+            GameObject v = (GameObject)GameObject.Instantiate(Random.Range(0,10) < 7 ? voxel1 : voxel2, voxels[i], Quaternion.identity, transform);
             v.transform.localScale = new Vector3(size, size, size);
             cheatVoxels.Add(v);
         }
     }
 
-    void Update()
-    {
-        float dist = Vector3.Distance(player.transform.position, transform.position);
+    // Update is called once per frame
+	public override void UpdateMe() {
+        base.UpdateMe();
+        Vector3 pos = transform.position;
+        pos.y = player.transform.position.y;
+        float dist = Vector3.Distance(player.transform.position, pos);
         dist = (dist - distanceCutoff) / distanceRange;
         dist = Mathf.Max(0f, Mathf.Min(1f, dist));
         SetAnimState(dist);
