@@ -41,6 +41,7 @@ public class SwarmIndividual : MonoBehaviour
   }
 
   State state = State.Stationary;
+  float scale;
 
   void Start()
   {
@@ -52,7 +53,7 @@ public class SwarmIndividual : MonoBehaviour
     WingTransformLeft.GetComponent<MeshRenderer>().material.mainTexture = Textures[index];
     WingTransformRight.GetComponent<MeshRenderer>().material.mainTexture = Textures[index];
 
-    float scale = Random.Range(5.0f, 7.0f);
+    scale = Random.Range(5.0f, 7.0f);
     transform.localScale = new Vector3(scale, scale, scale);
   }
 
@@ -62,6 +63,8 @@ public class SwarmIndividual : MonoBehaviour
     startledDir = dir;
     startledTime = totalStartledTime = time;
     transform.parent = swarm ? swarm.transform : null;
+    transform.localScale = new Vector3(scale, scale, scale);
+
     body.isKinematic = false;
     GetComponent<Collider>().enabled = true;
   }
@@ -87,6 +90,7 @@ public class SwarmIndividual : MonoBehaviour
 
     state = State.Landing;
     collToLandOn = closest;
+    landingPos = collToLandOn.transform.InverseTransformPoint(landingPos);
   }
 
   bool checkVis(Collider coll)
@@ -112,7 +116,13 @@ public class SwarmIndividual : MonoBehaviour
     stateTimer = Random.Range(3.0f, 12.0f);
     state = State.Stationary;
 
+    var prevScale = transform.localScale;
     transform.parent = other.transform;
+    transform.localScale = new Vector3(
+      prevScale.x / transform.parent.lossyScale.x,
+      prevScale.y / transform.parent.lossyScale.y,
+      prevScale.z / transform.parent.lossyScale.z);
+
     body.isKinematic = true;
 
     var rig = other.transform.GetComponent<Rigidbody>();
@@ -349,10 +359,17 @@ public class SwarmIndividual : MonoBehaviour
       alignmentFactor = 0.1f;
       avoidanceFactor = 0.8f;
       attractorFactor = 0.0f;
-      Vector3 landingDir = landingPos - transform.position;
+      Vector3 landingDir = collToLandOn.transform.TransformPoint(landingPos) - transform.position;
+      if(landingDir.magnitude > perchSearchRadius)
+      {
+        state = State.Flying;
+      }
+      else
+      {
       impulse += Vector3.ClampMagnitude(landingDir, 1.0f) * 0.05f;
       if (landingDir.magnitude < 2) avoidanceFactor = 0;
       if (landingDir.magnitude < 3.4f) straightFactor = 1.0f - landingDir.magnitude / 3.4f;
+      }
     }
     else
     {
