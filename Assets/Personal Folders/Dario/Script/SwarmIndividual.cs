@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class SwarmIndividual : MonoBehaviour
 {
+  public Texture2D[] Textures;
+
   public Swarm swarm;
   public float watchDistance;
   public float separationDistance;
@@ -46,7 +48,12 @@ public class SwarmIndividual : MonoBehaviour
     neighbourhood = new Collider[64];
     followMultiplier = Random.Range(0.5f, 1.1f);
     stateTimer = Random.Range(4.0f, 12.0f);
+    int index = Random.Range(0, Textures.Length);
+    WingTransformLeft.GetComponent<MeshRenderer>().material.mainTexture = Textures[index];
+    WingTransformRight.GetComponent<MeshRenderer>().material.mainTexture = Textures[index];
 
+    float scale = Random.Range(5.0f, 7.0f);
+    transform.localScale = new Vector3(scale, scale, scale);
   }
 
   public void Startle(Vector3 dir, float time)
