@@ -18,6 +18,7 @@ public class SwarmIndividual : MonoBehaviour
   public Transform WingTransformRight;
 
   public float maxSpeed = 0.8f;
+  public bool autoStart = true;
 
   private Rigidbody body;
   private int neighbourhoodCount;
@@ -28,6 +29,8 @@ public class SwarmIndividual : MonoBehaviour
   private float totalStartledTime;
 
   private float stateTimer;
+
+  public bool isLanded { get { return state == State.Stationary; } }
 
   private Vector3 landingPos;
 
@@ -78,6 +81,18 @@ public class SwarmIndividual : MonoBehaviour
 
   Collider collToLandOn;
 
+  public void Perch(Collider coll)
+  {
+    var closest = coll;
+
+    landingPos = closest.bounds.center + closest.bounds.extents.y * closest.transform.up;
+    landingPos += closest.bounds.extents.x * Random.Range(-1.0f, 1.0f) * closest.transform.right + closest.bounds.extents.z * Random.Range(-1.0f, 1.0f) * closest.transform.forward;
+
+    state = State.Landing;
+    collToLandOn = closest;
+    landingPos = collToLandOn.transform.InverseTransformPoint(landingPos);
+  }
+
   public void Perch()
   {
     var colliders = Physics.OverlapSphere(transform.position, perchSearchRadius, 1 << LayerMask.NameToLayer("BoidLand"));
@@ -91,13 +106,7 @@ public class SwarmIndividual : MonoBehaviour
 
     var closest = colliders[Random.Range(0, colliders.Length)];
 
-
-    landingPos = closest.bounds.center + closest.bounds.extents.y * closest.transform.up;
-    landingPos += closest.bounds.extents.x * Random.Range(-1.0f, 1.0f) * closest.transform.right + closest.bounds.extents.z * Random.Range(-1.0f, 1.0f) * closest.transform.forward;
-
-    state = State.Landing;
-    collToLandOn = closest;
-    landingPos = collToLandOn.transform.InverseTransformPoint(landingPos);
+    Perch(closest);
   }
 
   bool checkVis(Collider coll)
@@ -298,27 +307,31 @@ public class SwarmIndividual : MonoBehaviour
       wingRightRot.x = Mathf.LerpAngle(80.0f, 10.0f, Mathf.Sin(wingState) * 0.35f + 0.65f);
       WingTransformRight.localEulerAngles = wingRightRot;
 
-      stateTimer -= Time.fixedDeltaTime;
-      if (stateTimer <= 0)
-      {
-        stateTimer = Random.Range(15.0f, 25.0f);
-        var dir = Random.onUnitSphere * 0.7f;
-        if (dir.y < 0) dir.y *= -1;
-        Startle(dir, 3.0f);
-      }
-
-      if (Player.Instance)
+      if (autoStart)
       {
 
-        var playerPos = Player.Instance.transform.position;
-        var playerMoving = Player.Instance.isRunning;
-
-        if (Vector3.Distance(playerPos, transform.position) < 4 && playerMoving)
+        stateTimer -= Time.fixedDeltaTime;
+        if (stateTimer <= 0)
         {
           stateTimer = Random.Range(15.0f, 25.0f);
-          var dir = Random.onUnitSphere * 1.2f;
+          var dir = Random.onUnitSphere * 0.7f;
           if (dir.y < 0) dir.y *= -1;
           Startle(dir, 3.0f);
+        }
+
+        if (Player.Instance)
+        {
+
+          var playerPos = Player.Instance.transform.position;
+          var playerMoving = Player.Instance.isRunning;
+
+          if (Vector3.Distance(playerPos, transform.position) < 4 && playerMoving)
+          {
+            stateTimer = Random.Range(15.0f, 25.0f);
+            var dir = Random.onUnitSphere * 1.2f;
+            if (dir.y < 0) dir.y *= -1;
+            Startle(dir, 3.0f);
+          }
         }
       }
       return;
