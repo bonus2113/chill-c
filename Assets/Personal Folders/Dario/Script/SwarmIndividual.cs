@@ -89,7 +89,7 @@ public class SwarmIndividual : MonoBehaviour
   Vector3 cohesion()
   {
     Vector3 res = Vector3.zero;
-    if (neighbourhoodCount == 0) return res;
+    if (neighbourhoodCount <= 1) return res;
     for (int i = 0; i < neighbourhoodCount; i++)
     {
       var b = neighbourhood[i];
@@ -97,7 +97,7 @@ public class SwarmIndividual : MonoBehaviour
       res += b.transform.position;
     }
 
-    res *= 1.0f / neighbourhoodCount;
+    res *= 1.0f / (neighbourhoodCount-1);
 
     return (res - transform.position) / 100;
   }
@@ -105,7 +105,7 @@ public class SwarmIndividual : MonoBehaviour
   Vector3 separation()
   {
     Vector3 res = Vector3.zero;
-    if (neighbourhoodCount == 0) return res;
+    if (neighbourhoodCount <= 1) return res;
 
     for (int i = 0; i < neighbourhoodCount; i++)
     {
@@ -124,7 +124,7 @@ public class SwarmIndividual : MonoBehaviour
   Vector3 alignment()
   {
     Vector3 res = Vector3.zero;
-    if (neighbourhoodCount == 0) return res;
+    if (neighbourhoodCount <= 1) return res;
     for (int i = 0; i < neighbourhoodCount; i++)
     {
       var b = neighbourhood[i];
@@ -132,7 +132,7 @@ public class SwarmIndividual : MonoBehaviour
       res += b.GetComponent<Rigidbody>().velocity;
     }
 
-    res *= 1.0f / neighbourhoodCount;
+    res *= 1.0f / (neighbourhoodCount-1);
     return (res - body.velocity) / 8;
   }
 
@@ -205,7 +205,7 @@ public class SwarmIndividual : MonoBehaviour
       if (state == State.Stationary)
       {
 
-        var dir = Random.onUnitSphere * 0.1f;
+        var dir = Random.onUnitSphere * 0.7f;
         if (dir.y < 0) dir.y *= -1;
         Startle(dir, 3.0f);
       }
@@ -263,7 +263,7 @@ public class SwarmIndividual : MonoBehaviour
     float coherenceFactor = 1.0f;
     float avoidanceFactor = 1.0f;
     float attractorFactor = 1.0f;
-    float straightFactor = 0.0f;
+    float straightFactor = 0.4f;
 
     Vector3 impulse = Vector3.zero;
 
@@ -297,7 +297,14 @@ public class SwarmIndividual : MonoBehaviour
       impulse += confusion();
       impulse += swarm.Wind();
       impulse += swarm.SteeringVelocity(transform.position) * followMultiplier;
-      impulse += Vector3.up * 0.01f;
+      if(transform.position.y < 4)
+      {
+        impulse += Vector3.up * 0.01f;
+      }
+      else if(transform.position.y > 7)
+      {
+        impulse -= Vector3.up * 0.1f;
+      }
     }
 
     if (state == State.Startled)
@@ -312,9 +319,6 @@ public class SwarmIndividual : MonoBehaviour
     }
 
     impulse += sep * seperationFactor + align * alignmentFactor + cohe * coherenceFactor + avoid * avoidanceFactor + attractorFactor * attract;
-
-
-
 
     body.AddForce(impulse, ForceMode.VelocityChange);
 
