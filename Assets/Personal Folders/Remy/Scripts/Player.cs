@@ -17,7 +17,14 @@ public class Player : MonoBehaviour {
 
     [Header("Animation")]
     public List<Mesh> m_RunFrames = new List<Mesh>();
+    public Mesh m_JumpFrame = null;
+    public Mesh m_FallFrame = null;
     public Mesh m_StandMesh = null;
+
+    private bool b_JumpTimerActive = false;
+    private float m_JumpTimer = 0.0f;
+    private float m_JumpDuration = 0.2f;
+    private float m_JumpForce = 15.0f;
 
     private MeshFilter m_MeshFilter = null;
 
@@ -55,6 +62,15 @@ public class Player : MonoBehaviour {
     private float m_FrameTime = 0.0f;
     private int m_CurrentFrame = 0;
 
+    private bool b_Jumping = false;
+    public bool Jumping
+    {
+        get
+        {
+            return b_Jumping;
+        }
+    }
+
     private bool b_Running = false;
     public bool isRunning
     {
@@ -79,6 +95,13 @@ public class Player : MonoBehaviour {
     private float m_FootstepTimer = 0.0f;
     private const float c_FootstepTime = 0.25f;
 
+    private Material m_VertexMat = null;
+    [SerializeField]
+    private Material m_JumpMat = null;
+
+    [SerializeField]
+    private Material m_FallMat = null;
+
     void Awake()
     {
         if (m_Instance != null)
@@ -89,6 +112,8 @@ public class Player : MonoBehaviour {
         m_Instance = this;
 
         this.m_MeshFilter = this.GetComponent<MeshFilter>();
+
+        m_VertexMat = this.GetComponent<Renderer>().material;
 
         m_FrameTime = 1.0f / m_FramesPerSecond;
 
@@ -138,25 +163,75 @@ public class Player : MonoBehaviour {
 
         //m_RB.velocity = m_Vel;
 
-        if (m_Vel.magnitude > 1.0f)
+        if (!b_Jumping)
         {
-            b_Running = true;
-            m_FootstepTimer += Time.deltaTime;
+            if (m_Vel.magnitude > 1.0f)
+            {
+                b_Running = true;
+                m_FootstepTimer += Time.deltaTime;
 
-            this.transform.rotation = Quaternion.LookRotation(Quaternion.Euler(Vector3.up * -90.0f) * m_Vel);
+                this.transform.rotation = Quaternion.LookRotation(Quaternion.Euler(Vector3.up * -90.0f) * m_Vel);
+            }
+            else
+            {
+                b_Running = false;
+                m_FootstepTimer = 0.0f;
+                m_MeshFilter.mesh = m_StandMesh;
+                this.GetComponent<Renderer>().material = m_VertexMat;
+
+            }
+
+            if (m_CharacterController.isGrounded && input.b_Jump)
+            {
+                b_Running = false;
+                b_Jumping = true;
+                this.GetComponent<Renderer>().material = m_JumpMat;
+                b_JumpTimerActive = true;
+                m_JumpTimer = 0.0f;
+                Vector3 jumpVel = Vector3.up * 5.0f;
+
+                m_CharacterController.Move(Vector3.up * m_JumpForce * Time.deltaTime);
+                //Debug.Log("Jump");
+                m_MeshFilter.mesh = m_JumpFrame;
+            }
         }
         else
         {
-            b_Running = false;
-            m_FootstepTimer = 0.0f;
-            m_MeshFilter.mesh = m_StandMesh;
+            if (m_Vel != Vector3.zero)
+            {
+                this.transform.rotation = Quaternion.LookRotation(Quaternion.Euler(Vector3.up * -90.0f) * m_Vel);
+            }
+
+            if (m_CharacterController.isGrounded)
+            {
+                b_JumpTimerActive = false;
+                b_Jumping = false;
+                b_Running = true;
+                //Debug.Log("Land");
+            }
+            else
+            {
+                if (b_JumpTimerActive)
+                {
+                    m_JumpTimer += Time.deltaTime;
+
+                    if (m_JumpTimer >= m_JumpDuration)
+                    {
+                        b_JumpTimerActive = false;
+                        m_MeshFilter.mesh = m_FallFrame;
+                        this.GetComponent<Renderer>().material = m_FallMat;
+                    }
+
+                    m_CharacterController.Move(Vector3.up * m_JumpForce * Time.deltaTime);
+                }
+            }
         }
 
         m_CharacterController.Move((m_Vel + Physics.gravity) * Time.fixedDeltaTime);
 
         //animation
 
-        if (b_Running)
+        if (b_Running && !b_Jumping)
         {
             //anim
             m_AnimTimer += Time.deltaTime;
@@ -168,6 +243,7 @@ public class Player : MonoBehaviour {
                 m_CurrentFrame %= m_RunFrames.Count;
 
                 m_MeshFilter.mesh = m_RunFrames[m_CurrentFrame];
+                this.GetComponent<Renderer>().material = m_VertexMat;
             }
             //particle
 
