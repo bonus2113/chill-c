@@ -25,11 +25,12 @@ public class DecalAnimation : MonoBehaviour {
         tex = mat.mainTexture as Texture2D;
         size = mat.mainTexture.width / 4;
 
-        mat.SetFloat("_Cutoff", 0f);
+        mat.SetFloat("_Cutoff", 0.1f);
     }
 
     void Update()
     {
+        Debug.Log(mat.GetFloat("_Cutoff").ToString());
         for (int i = parts.Count - 1; i >= 0; i--)
         {
             // calc position and decrease speed
