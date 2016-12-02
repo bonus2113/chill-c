@@ -36,6 +36,8 @@ public class CamControl : MonoBehaviour {
     private Transform m_StaticShot;
     private float m_StaticDrift = 0.0f;
 
+    private Vector3[] m_RailPoints;
+
     private bool b_Shaking = false;
     private float m_ShakeTimer = 0.0f;
     private float m_ShakeMaxMagnitude = 1.0f;
@@ -64,8 +66,10 @@ public class CamControl : MonoBehaviour {
                 StaticShot();
                 break;
             case CamState.Follow:
+                FollowPlayer();
                 break;
             case CamState.FollowRail:
+                FollowRail();
                 break;
         }
 	}
@@ -78,6 +82,27 @@ public class CamControl : MonoBehaviour {
         Vector3 targetLookRotation = Player.Instance.transform.position - this.transform.position;
         targetLookRotation.Normalize();
         this.transform.forward = Vector3.Slerp(m_StaticShot.forward, targetLookRotation, m_StaticDrift);
+    }
+    void FollowPlayer() {
+
+    }
+    void FollowRail() {
+        Vector3[] temp = new Vector3[m_RailPoints.Length - 1];
+        Vector3 p = Player.Instance.transform.position + m_Offset;
+        for (int i = 0; i < temp.Length; i++) {
+            Vector3 a = m_RailPoints[i];
+            Vector3 b = m_RailPoints[i + 1];
+            temp[i] = a + (Mathf.Clamp(Vector3.Dot((p-a),(b-a).normalized),0,Vector3.Magnitude(b-a)) * (b-a).normalized);
+        }
+        float min = Mathf.Infinity;
+        Vector3 targetPos = Vector3.zero;
+        for(int i = 0; i < temp.Length; i++) {
+            if (Vector3.Distance(temp[i], p) < min) {
+                min = Vector3.Distance(temp[i], p);
+                targetPos = temp[i];
+            }
+        }
+        this.transform.position += (targetPos - this.transform.position) * m_CamSpeed * Time.deltaTime;
     }
 
     public void SetCamTopDown(Vector3 offset) {
@@ -98,8 +123,9 @@ public class CamControl : MonoBehaviour {
     public void SetCamFollow() {
 
     }
-    public void SetCamRail() {
-
+    public void SetCamRail(CameraRail rail) {
+        m_CamState = CamState.FollowRail;
+        m_RailPoints = rail.m_PointsOnRail;
     }
 
     public void StartShake(float shakesPerSecond, float magnitude) {
