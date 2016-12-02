@@ -49,7 +49,6 @@ public class CamControl : MonoBehaviour {
     void Start () {
         m_Offset = m_DefualtTopDownOffset;
         transform.rotation = m_DefualtTopDownRotation;
-        SetCamFollow(Vector3.up*3, 0.4f);
     }
 	// Update is called once per frame
 	void Update () {

@@ -80,9 +80,6 @@ public class Player : MonoBehaviour {
         }
     }
 
-    [SerializeField]
-    private ParticleSystem m_LandingParticles = null;
-
     [Header("RunParticles")]
     public GameObject m_RunParticlePrefab = null;
 
@@ -92,6 +89,9 @@ public class Player : MonoBehaviour {
     private float m_ParticleTimer = 0.0f;
     private float m_ParticleSpawnInterval = 1.0f / 20.0f;
     private int m_CurrentParticleID = 0;
+
+    [SerializeField]
+    private GameObject m_LandingParticlesPrefab = null;
 
     private CharacterController m_CharacterController = null;
 
@@ -210,8 +210,9 @@ public class Player : MonoBehaviour {
                 b_JumpTimerActive = false;
                 b_Jumping = false;
                 b_Running = true;
-                m_LandingParticles.Play();
+                var go = (GameObject)GameObject.Instantiate(m_LandingParticlesPrefab, this.transform.position, Quaternion.identity);
 
+                Destroy(go, 5.0f);
                 //Debug.Log("Land");
             }
             else
