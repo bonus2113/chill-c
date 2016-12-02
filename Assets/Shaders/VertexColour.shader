@@ -55,11 +55,12 @@
 			{
 				// sample the texture
 				fixed4 col = i.color * _Color;
-				float atten = LIGHT_ATTENUATION(i);
+            float atten = 1; // LIGHT_ATTENUATION(i);
 				return col * atten; 
 				//return col;
 			}
 			ENDCG
 		}
-	}Fallback "VertexLit"
+	}
+    Fallback "VertexLit"
 }
