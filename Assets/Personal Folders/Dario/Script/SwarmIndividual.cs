@@ -113,7 +113,7 @@ public class SwarmIndividual : MonoBehaviour
     state = State.Stationary;
 
     transform.parent = other.transform;
-    body.isKinematic = true;
+    //body.isKinematic = true;
 
     var rig = other.transform.GetComponent<Rigidbody>();
     if (rig)
