@@ -55,7 +55,7 @@ public class SwarmIndividual : MonoBehaviour
     WingTransformLeft.GetComponent<MeshRenderer>().material.mainTexture = Textures[index];
     WingTransformRight.GetComponent<MeshRenderer>().material.mainTexture = Textures[index];
 
-    scale = Random.Range(5.0f, 7.0f);
+    scale = Random.Range(3.0f, 6.0f);
     transform.localScale = new Vector3(scale, scale, scale);
   }
 
@@ -350,17 +350,20 @@ public class SwarmIndividual : MonoBehaviour
     float avoidanceFactor = 1.0f;
     float attractorFactor = 1.0f;
     float straightFactor = 0.4f;
+    float confusionFactor = 1.0f;
 
     Vector3 impulse = Vector3.zero;
 
     confusedTimer -= Time.fixedDeltaTime;
     if (confusedTimer <= 0)
     {
-      confusedTimer = Random.Range(0.2f, 1.0f);
-      confusedTargetDir = Random.onUnitSphere * Random.Range(0.05f, 0.1f);
+      confusedTimer = Random.Range(0.2f, 0.5f);
+      confusedTargetDir = Random.onUnitSphere * Random.Range(0.15f, 0.3f);
     }
 
-    confusedCurrentDir = Vector3.SmoothDamp(confusedCurrentDir, confusedTargetDir, ref confusedCurrentVel, 0.5f);
+
+
+    confusedCurrentDir = Vector3.SmoothDamp(confusedCurrentDir, confusedTargetDir, ref confusedCurrentVel, 0.2f);
 
     if (state == State.Landing)
     {
@@ -369,6 +372,7 @@ public class SwarmIndividual : MonoBehaviour
       alignmentFactor = 0.1f;
       avoidanceFactor = 0.8f;
       attractorFactor = 0.0f;
+      confusionFactor = 0.4f;
       Vector3 landingDir = collToLandOn.transform.TransformPoint(landingPos) - transform.position;
       if(landingDir.magnitude > perchSearchRadius)
       {
@@ -378,12 +382,12 @@ public class SwarmIndividual : MonoBehaviour
       {
       impulse += Vector3.ClampMagnitude(landingDir, 1.0f) * 0.05f;
       if (landingDir.magnitude < 2) avoidanceFactor = 0;
+      if (landingDir.magnitude < 4) confusionFactor = 0;
       if (landingDir.magnitude < 3.4f) straightFactor = 1.0f - landingDir.magnitude / 3.4f;
       }
     }
     else
     {
-      impulse += confusion();
       impulse += swarm.Wind();
       impulse += swarm.SteeringVelocity(transform.position) * followMultiplier;
       if (transform.position.y < 4)
@@ -413,13 +417,14 @@ public class SwarmIndividual : MonoBehaviour
       }
     }
 
+    impulse += confusion() * confusionFactor;
     impulse += sep * seperationFactor + align * alignmentFactor + cohe * coherenceFactor + avoid * avoidanceFactor + attractorFactor * attract;
 
     body.AddForce(impulse, ForceMode.VelocityChange);
 
     body.velocity = Vector3.ClampMagnitude(body.velocity, maxSpeed);
 
-    wingState += (Mathf.Max(0, body.velocity.y + impulse.y) + 0.4f) * Time.fixedDeltaTime * 20.0f;
+    wingState += (Mathf.Max(0, body.velocity.y + impulse.y) * 15.0f + 25.0f) * Time.fixedDeltaTime ;
 
     if (body.velocity.magnitude > 0.05f)
     {

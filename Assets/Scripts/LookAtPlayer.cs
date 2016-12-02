@@ -27,7 +27,7 @@ public class LookAtPlayer : ReactOnPlayerNear
 
         if (b_PlayerNear)
         {
-            Debug.Log("Player near: " + this.gameObject.name);
+            //Debug.Log("Player near: " + this.gameObject.name);
             //update target rot
             LookTowardsPlayer();
 
@@ -36,10 +36,10 @@ public class LookAtPlayer : ReactOnPlayerNear
                 //updateEmissionRate
                 Vector3 targetNoY = m_TargetRotation * Vector3.forward;
                 targetNoY.y = 0.0f;
-                float dotResult = Mathf.Abs(Vector3.Dot(this.transform.forward, targetNoY));
+                float dotResult = 0.5f + Vector3.Dot(this.transform.forward, targetNoY) * 0.5f;
                 var emission = m_EmissionRateControl.emission;
                 emission.rateOverTimeMultiplier = ((1.0f-dotResult) * m_MaxEmissionRate);
-                Debug.Log("Dot rate: " + dotResult);
+                //Debug.Log("Dot rate: " + dotResult);
             }
         }
         else
