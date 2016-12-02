@@ -46,6 +46,7 @@ public class SwarmIndividual : MonoBehaviour
     neighbourhood = new Collider[64];
     followMultiplier = Random.Range(0.5f, 1.1f);
     stateTimer = Random.Range(4.0f, 12.0f);
+
   }
 
   public void Startle(Vector3 dir, float time)
@@ -53,13 +54,18 @@ public class SwarmIndividual : MonoBehaviour
     state = State.Startled;
     startledDir = dir;
     startledTime = totalStartledTime = time;
+    transform.parent = swarm ? swarm.transform : null;
+    body.isKinematic = false;
+    GetComponent<Collider>().enabled = true;
   }
+
+  Collider collToLandOn;
 
   public void Perch()
   {
     var colliders = Physics.OverlapSphere(transform.position, perchSearchRadius, 1 << LayerMask.NameToLayer("BoidLand"));
 
-    if(colliders.Length == 0)
+    if (colliders.Length == 0)
     {
       state = State.Confused;
       return;
@@ -73,6 +79,7 @@ public class SwarmIndividual : MonoBehaviour
     landingPos += closest.bounds.extents.x * Random.Range(-1.0f, 1.0f) * closest.transform.right + closest.bounds.extents.z * Random.Range(-1.0f, 1.0f) * closest.transform.forward;
 
     state = State.Landing;
+    collToLandOn = closest;
   }
 
   bool checkVis(Collider coll)
@@ -89,6 +96,32 @@ public class SwarmIndividual : MonoBehaviour
     return true;
   }
 
+  public void OnTriggerEnter(Collider other)
+  {
+    if (state != State.Landing) return;
+
+    if (other != collToLandOn) return;
+
+    stateTimer = Random.Range(3.0f, 12.0f);
+    state = State.Stationary;
+
+    transform.parent = other.transform;
+    body.isKinematic = true;
+
+    var rig = other.transform.GetComponent<Rigidbody>();
+    if (rig)
+    {
+      rig.AddForceAtPosition(body.velocity, transform.position);
+
+    }
+    GetComponent<Collider>().enabled = false;
+  }
+
+  public void OnCollisionEnter(Collision collision)
+  {
+    OnTriggerEnter(collision.collider);
+  }
+
   Vector3 cohesion()
   {
     Vector3 res = Vector3.zero;
@@ -100,7 +133,7 @@ public class SwarmIndividual : MonoBehaviour
       res += b.transform.position;
     }
 
-    res *= 1.0f / (neighbourhoodCount-1);
+    res *= 1.0f / (neighbourhoodCount - 1);
 
     return (res - transform.position) / 100;
   }
@@ -135,7 +168,7 @@ public class SwarmIndividual : MonoBehaviour
       res += b.GetComponent<Rigidbody>().velocity;
     }
 
-    res *= 1.0f / (neighbourhoodCount-1);
+    res *= 1.0f / (neighbourhoodCount - 1);
     return (res - body.velocity) / 8;
   }
 
@@ -145,7 +178,7 @@ public class SwarmIndividual : MonoBehaviour
 
     RaycastHit hit;
     Vector3 dir = transform.forward;
-    if(Physics.Raycast(transform.position, Vector3.RotateTowards(transform.forward, dir, 0.2f, 0.0f), out hit, avoidanceLookahead, 1 << LayerMask.NameToLayer("BoidAvoid")))
+    if (Physics.Raycast(transform.position, Vector3.RotateTowards(transform.forward, dir, 0.2f, 0.0f), out hit, avoidanceLookahead, 1 << LayerMask.NameToLayer("BoidAvoid")))
     {
       float dist = hit.distance / avoidanceLookahead;
       res += Vector3.Reflect(transform.forward, hit.normal) * dist;
@@ -180,10 +213,10 @@ public class SwarmIndividual : MonoBehaviour
   {
     Vector3 res = Vector3.zero;
     var colls = Physics.OverlapSphere(transform.position, 30, 1 << LayerMask.NameToLayer("BoidTractor"));
-    foreach(var coll in colls)
+    foreach (var coll in colls)
     {
       BoidAttractor attr = coll.GetComponent<BoidAttractor>();
-      if(attr)
+      if (attr)
       {
         res -= attr.strength * Vector3.ClampMagnitude(transform.position - attr.transform.position, 0.002f);
       }
@@ -239,7 +272,7 @@ public class SwarmIndividual : MonoBehaviour
       WingTransformRight.localEulerAngles = wingRightRot;
 
       stateTimer -= Time.fixedDeltaTime;
-      if(stateTimer <= 0)
+      if (stateTimer <= 0)
       {
         stateTimer = Random.Range(15.0f, 25.0f);
         var dir = Random.onUnitSphere * 0.7f;
@@ -247,17 +280,20 @@ public class SwarmIndividual : MonoBehaviour
         Startle(dir, 3.0f);
       }
 
-      var playerPos = Player.Instance.transform.position;
-      var playerMoving = Player.Instance.isRunning;
-
-      if(Vector3.Distance(playerPos, transform.position) < 4 && playerMoving)
+      if (Player.Instance)
       {
-        stateTimer = Random.Range(15.0f, 25.0f);
-        var dir = Random.onUnitSphere * 1.2f;
-        if (dir.y < 0) dir.y *= -1;
-        Startle(dir, 3.0f);
-      }
 
+        var playerPos = Player.Instance.transform.position;
+        var playerMoving = Player.Instance.isRunning;
+
+        if (Vector3.Distance(playerPos, transform.position) < 4 && playerMoving)
+        {
+          stateTimer = Random.Range(15.0f, 25.0f);
+          var dir = Random.onUnitSphere * 1.2f;
+          if (dir.y < 0) dir.y *= -1;
+          Startle(dir, 3.0f);
+        }
+      }
       return;
     }
 
@@ -310,28 +346,23 @@ public class SwarmIndividual : MonoBehaviour
       impulse += Vector3.ClampMagnitude(landingDir, 1.0f) * 0.05f;
       if (landingDir.magnitude < 2) avoidanceFactor = 0;
       if (landingDir.magnitude < 3.4f) straightFactor = 1.0f - landingDir.magnitude / 3.4f;
-      if (landingDir.magnitude < 0.1f)
-      {
-        stateTimer = Random.Range(3.0f, 12.0f);
-        state = State.Stationary;
-      }
     }
     else
     {
       impulse += confusion();
       impulse += swarm.Wind();
       impulse += swarm.SteeringVelocity(transform.position) * followMultiplier;
-      if(transform.position.y < 4)
+      if (transform.position.y < 4)
       {
         impulse += Vector3.up * 0.01f;
       }
-      else if(transform.position.y > 7)
+      else if (transform.position.y > 7)
       {
         impulse -= Vector3.up * 0.1f;
       }
 
       stateTimer -= Time.fixedDeltaTime;
-      if(stateTimer <= 0)
+      if (stateTimer <= 0)
       {
         Perch();
       }
@@ -354,12 +385,12 @@ public class SwarmIndividual : MonoBehaviour
 
     body.velocity = Vector3.ClampMagnitude(body.velocity, maxSpeed);
 
-    wingState +=  (Mathf.Max(0, body.velocity.y + impulse.y) + 0.4f) * Time.fixedDeltaTime * 20.0f ;
+    wingState += (Mathf.Max(0, body.velocity.y + impulse.y) + 0.4f) * Time.fixedDeltaTime * 20.0f;
 
     if (body.velocity.magnitude > 0.05f)
     {
       var straightVel = Vector3.ProjectOnPlane(body.velocity, Vector3.up);
-      transform.LookAt( transform.position + Vector3.Slerp(transform.forward, (body.velocity.normalized * (1.0f- straightFactor) + straightVel * straightFactor), 10.0f * Time.fixedDeltaTime) , Vector3.up);
+      transform.LookAt(transform.position + Vector3.Slerp(transform.forward, (body.velocity.normalized * (1.0f - straightFactor) + straightVel * straightFactor), 10.0f * Time.fixedDeltaTime), Vector3.up);
     }
   }
 }
