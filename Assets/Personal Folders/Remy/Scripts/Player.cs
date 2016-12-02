@@ -80,6 +80,9 @@ public class Player : MonoBehaviour {
         }
     }
 
+    [SerializeField]
+    private ParticleSystem m_LandingParticles = null;
+
     [Header("RunParticles")]
     public GameObject m_RunParticlePrefab = null;
 
@@ -207,6 +210,8 @@ public class Player : MonoBehaviour {
                 b_JumpTimerActive = false;
                 b_Jumping = false;
                 b_Running = true;
+                m_LandingParticles.Play();
+
                 //Debug.Log("Land");
             }
             else
