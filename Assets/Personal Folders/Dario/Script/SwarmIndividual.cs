@@ -31,6 +31,8 @@ public class SwarmIndividual : MonoBehaviour
 
   private Vector3 landingPos;
 
+    private HingeJoint m_Hinge = null;
+
   enum State
   {
     Stationary,
@@ -62,11 +64,16 @@ public class SwarmIndividual : MonoBehaviour
     state = State.Startled;
     startledDir = dir;
     startledTime = totalStartledTime = time;
-    transform.parent = swarm ? swarm.transform : null;
-    transform.localScale = new Vector3(scale, scale, scale);
 
-    body.isKinematic = false;
+    //body.isKinematic = false;
     GetComponent<Collider>().enabled = true;
+
+        if (m_Hinge != null)
+        {
+            m_Hinge.connectedBody.AddForceAtPosition(-dir.normalized * 1.5f, this.transform.position, ForceMode.Impulse);
+            Destroy(m_Hinge);
+            m_Hinge = null;
+        }
   }
 
   Collider collToLandOn;
@@ -116,23 +123,26 @@ public class SwarmIndividual : MonoBehaviour
     stateTimer = Random.Range(3.0f, 12.0f);
     state = State.Stationary;
 
-    var prevScale = transform.localScale;
-    transform.parent = other.transform;
-    transform.localScale = new Vector3(
-      prevScale.x / transform.parent.lossyScale.x,
-      prevScale.y / transform.parent.lossyScale.y,
-      prevScale.z / transform.parent.lossyScale.z);
+        //body.isKinematic = true;
 
-    body.isKinematic = true;
+        var rig = other.transform.GetComponent<Rigidbody>();
+        if (rig)
+        {
+          rig.AddForceAtPosition(body.velocity * 0.75f, transform.position, ForceMode.Impulse);
+            //add joint 420 boii
+            m_Hinge = this.gameObject.AddComponent<HingeJoint>();
+            m_Hinge.useLimits = true;
+            var limits = m_Hinge.limits;
+            limits.max = 0;
+            limits.min = 0;
+            m_Hinge.limits = limits;
+            m_Hinge.autoConfigureConnectedAnchor = true;
+            m_Hinge.connectedBody = rig;
+        }
+        GetComponent<Collider>().enabled = false;
 
-    var rig = other.transform.GetComponent<Rigidbody>();
-    if (rig)
-    {
-      rig.AddForceAtPosition(body.velocity, transform.position);
-
+        body.velocity = Vector3.zero;
     }
-    GetComponent<Collider>().enabled = false;
-  }
 
   public void OnCollisionEnter(Collision collision)
   {
@@ -277,15 +287,15 @@ public class SwarmIndividual : MonoBehaviour
 
     if (state == State.Stationary)
     {
-      body.velocity = Vector3.zero;
-      wingState += Time.fixedDeltaTime * 0.7f;
+      //body.velocity = Vector3.zero;
+      wingState += Time.fixedDeltaTime * 1.7f;
 
       var wingLeftRot = WingTransformRight.localEulerAngles;
-      wingLeftRot.x = Mathf.LerpAngle(100.0f, 170.0f, Mathf.Sin(wingState) * 0.15f + 0.25f);
+      wingLeftRot.x = Mathf.LerpAngle(100.0f, 170.0f, Mathf.Sin(wingState) * 0.35f + 0.35f);
       WingTransformLeft.localEulerAngles = wingLeftRot;
 
       var wingRightRot = WingTransformRight.localEulerAngles;
-      wingRightRot.x = Mathf.LerpAngle(80.0f, 10.0f, Mathf.Sin(wingState) * 0.15f + 0.75f);
+      wingRightRot.x = Mathf.LerpAngle(80.0f, 10.0f, Mathf.Sin(wingState) * 0.35f + 0.65f);
       WingTransformRight.localEulerAngles = wingRightRot;
 
       stateTimer -= Time.fixedDeltaTime;
