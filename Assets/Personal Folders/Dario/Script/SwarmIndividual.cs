@@ -25,6 +25,8 @@ public class SwarmIndividual : MonoBehaviour
   private float startledTime;
   private float totalStartledTime;
 
+  private float stateTimer;
+
   private Vector3 landingPos;
 
   enum State
@@ -43,6 +45,7 @@ public class SwarmIndividual : MonoBehaviour
     body = GetComponent<Rigidbody>();
     neighbourhood = new Collider[64];
     followMultiplier = Random.Range(0.5f, 1.1f);
+    stateTimer = Random.Range(4.0f, 12.0f);
   }
 
   public void Startle(Vector3 dir, float time)
@@ -235,6 +238,26 @@ public class SwarmIndividual : MonoBehaviour
       wingRightRot.x = Mathf.LerpAngle(80.0f, 10.0f, Mathf.Sin(wingState) * 0.15f + 0.75f);
       WingTransformRight.localEulerAngles = wingRightRot;
 
+      stateTimer -= Time.fixedDeltaTime;
+      if(stateTimer <= 0)
+      {
+        stateTimer = Random.Range(15.0f, 25.0f);
+        var dir = Random.onUnitSphere * 0.7f;
+        if (dir.y < 0) dir.y *= -1;
+        Startle(dir, 3.0f);
+      }
+
+      var playerPos = Player.Instance.transform.position;
+      var playerMoving = Player.Instance.isRunning;
+
+      if(Vector3.Distance(playerPos, transform.position) < 4 && playerMoving)
+      {
+        stateTimer = Random.Range(15.0f, 25.0f);
+        var dir = Random.onUnitSphere * 1.2f;
+        if (dir.y < 0) dir.y *= -1;
+        Startle(dir, 3.0f);
+      }
+
       return;
     }
 
@@ -252,7 +275,7 @@ public class SwarmIndividual : MonoBehaviour
 
     neighbourhoodCount = Physics.OverlapSphereNonAlloc(transform.position, watchDistance, neighbourhood, 1 << gameObject.layer);
 
-    Vector3 sep = separation() * 0.1f;
+    Vector3 sep = separation() * 0.3f;
     Vector3 align = alignment();
     Vector3 cohe = cohesion();
     Vector3 avoid = avoidance();
@@ -289,6 +312,7 @@ public class SwarmIndividual : MonoBehaviour
       if (landingDir.magnitude < 3.4f) straightFactor = 1.0f - landingDir.magnitude / 3.4f;
       if (landingDir.magnitude < 0.1f)
       {
+        stateTimer = Random.Range(3.0f, 12.0f);
         state = State.Stationary;
       }
     }
@@ -304,6 +328,12 @@ public class SwarmIndividual : MonoBehaviour
       else if(transform.position.y > 7)
       {
         impulse -= Vector3.up * 0.1f;
+      }
+
+      stateTimer -= Time.fixedDeltaTime;
+      if(stateTimer <= 0)
+      {
+        Perch();
       }
     }
 
@@ -325,8 +355,6 @@ public class SwarmIndividual : MonoBehaviour
     body.velocity = Vector3.ClampMagnitude(body.velocity, maxSpeed);
 
     wingState +=  (Mathf.Max(0, body.velocity.y + impulse.y) + 0.4f) * Time.fixedDeltaTime * 20.0f ;
-
-
 
     if (body.velocity.magnitude > 0.05f)
     {
