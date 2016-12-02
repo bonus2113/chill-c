@@ -13,6 +13,8 @@ public class Player : MonoBehaviour {
 
     private Vector3 m_Vel = Vector3.zero;
 
+    public bool b_CamRelativeMovement = false;
+
     [Header("Animation")]
     public List<Mesh> m_RunFrames = new List<Mesh>();
     public Mesh m_StandMesh = null;
@@ -115,7 +117,15 @@ public class Player : MonoBehaviour {
     private void ProcessInput(RxInputs.MovementInputs input)
     {
         //Movement
-        Vector3 inputDir = new Vector3(input.Direction2D.x, 0.0f, input.Direction2D.y).normalized;
+        Vector3 inputDir = Vector3.zero;
+        if (b_CamRelativeMovement) {
+            Vector3 camForward = Camera.main.transform.forward;
+            camForward.y = 0;
+            camForward.Normalize();
+            inputDir = (Camera.main.transform.right * input.Direction2D.x) + (camForward * input.Direction2D.y);
+        } else {
+            inputDir = new Vector3(input.Direction2D.x, 0.0f, input.Direction2D.y).normalized;
+        }
 
         if (inputDir != Vector3.zero)
         {
