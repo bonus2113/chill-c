@@ -80,10 +80,11 @@ public class SoundManager : MonoBehaviour
         this.m_theme.loop = true;
 
         DontDestroyOnLoad(transform.gameObject);
-        StartBackgroundMusic();
-    }
+        this.m_ambientLoop.Play();
+    //StartBackgroundMusic();
+  }
 
-    void Update()
+  void Update()
     {
         footstepTimer -= Time.deltaTime;
         if(Player.Instance.isRunning & footstepTimer < 0f)
@@ -99,7 +100,6 @@ public class SoundManager : MonoBehaviour
             return;
 
         m_loopingPlaying = true;
-        this.m_ambientLoop.Play();
         this.m_ThemeIntro.Play();
         this.m_theme.PlayDelayed(themeIntro.length);
     }
