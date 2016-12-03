@@ -39,6 +39,7 @@ public class RuneTrigger : MonoBehaviour {
     {
         runesActive++;
         triggers.triggered = triggered = true;
+        Events.Instance.Raise(new WormEvents.WormClicked(this.gameObject, this.gameObject.transform.position));  
 
         if(runesActive == 2)
         {

@@ -19,7 +19,7 @@ public class RisePlayerNear : ReactOnPlayerNear {
     private float m_ClickStartTime = 0.0f;
     private const float c_DistanceTimeFactor = 0.09f;
 
-    private const float c_MaximumClickRange = 5.0f;
+    private const float c_MaximumClickRange = 7.0f;
 
     // Use this for initialization
     protected override void Start () {
