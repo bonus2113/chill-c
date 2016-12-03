@@ -28,9 +28,15 @@ public class RisePlayerNear : ReactOnPlayerNear {
         m_StartPos = this.transform.position;
         Events.Instance.AddListener<WormEvents.WormClicked>(OnWormClicked);
 	}
-	
-	// Update is called once per frame
-	public override void UpdateMe() {
+
+  void OnDestroy()
+  {
+    Events.Instance.RemoveListener<WormEvents.WormClicked>(OnWormClicked);
+
+  }
+
+  // Update is called once per frame
+  public override void UpdateMe() {
         base.UpdateMe();
 
         if (!b_TriggerClickBehaviour)
