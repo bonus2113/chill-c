@@ -17,6 +17,7 @@ public class FountainSimulate : MonoBehaviour {
   public ParticleSystem particlesToRender;
   public int FrameRate = 10;
   public Shader ParticleShader;
+  public float brightness = 1;
 
   Material particleMaterial;
   int generatePointsKernel;
@@ -92,7 +93,6 @@ public class FountainSimulate : MonoBehaviour {
     });
 
     particleMaterial.SetBuffer("Vertices", vertexBuffer);
-
   }
 
   public void OnDisable()
@@ -146,6 +146,8 @@ public class FountainSimulate : MonoBehaviour {
   // Update is called once per frame
   void Update()
   {
+    particleMaterial.SetFloat("Brightness", brightness);
+
     frameTime -= Time.deltaTime;
     if (frameTime > 0) return;
 
