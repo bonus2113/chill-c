@@ -21,6 +21,8 @@ public class Intro : MonoBehaviour {
 
   public MaskableGraphic uiLogo;
 
+  public GameObject UiRoot;
+
   DepthOfFieldModel.Settings playSettings;
 
   Vector3 startCamPos;
@@ -60,6 +62,8 @@ public class Intro : MonoBehaviour {
     startButterfly.gameObject.SetActive(true);
     startButterfly.Perch(butterflyLandTarget);
     startButterfly.autoStart = false;
+
+    UiRoot.SetActive(true);
   }
 
   // Update is called once per frame
