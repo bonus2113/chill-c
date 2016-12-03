@@ -56,6 +56,6 @@ public class RuneTrigger : MonoBehaviour {
             obj.transform.localPosition = Vector3.zero;
         }
 
-        SoundManager.Instance.PlaySound(SoundManager.Sounds.RUNE, 1.0f);
+        SoundManager.Instance.PlaySoundNotSpatial(SoundManager.Sounds.RUNE, 0.65f);
     }
 }

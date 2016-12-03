@@ -31,6 +31,8 @@ public class SoundManager : MonoBehaviour
 
     private float footstepTimer = 0f;
 
+    private List<AudioSource> tempSources = new List<AudioSource>();
+
     public static SoundManager Instance
     {
         get
@@ -92,6 +94,15 @@ public class SoundManager : MonoBehaviour
             PlaySound(Sounds.FOOTSTEP, 0.28f);
             footstepTimer = 0.25f;
         }
+
+      //clean temp audio sources
+        for(int i = tempSources.Count -1; i >= 0; i++)
+        {
+            if(!tempSources[i].isPlaying)
+            {
+                tempSources.RemoveAt(i);
+            }
+        }
     }
 
     public void StartBackgroundMusic()
@@ -143,5 +154,15 @@ public class SoundManager : MonoBehaviour
     public void PlaySound(Sounds sound, float volume = 1.0f)
     {
         AudioSource.PlayClipAtPoint(GetClipFromEnum(sound), UnityEngine.Camera.main.transform.position, volume);
+    }
+
+
+    public void PlaySoundNotSpatial(Sounds sound, float volume = 1.0f)
+    {
+        AudioSource source = this.gameObject.AddComponent<AudioSource>();
+        source.clip = GetClipFromEnum(sound);
+        source.volume = volume;
+        source.Play();
+        tempSources.Add(source);
     }
 }
