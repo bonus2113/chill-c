@@ -27,6 +27,7 @@ public class ReloadLevelOnPlayer : MonoBehaviour
     {
       fadeTimer += Time.deltaTime;
       uiFade.color = new Color(0, 0, 0, fadeTimer / FadeTime);
+      AudioListener.volume = 1.0f - fadeTimer / FadeTime;
       if (fadeTimer >= FadeTime)
       {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
