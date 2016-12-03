@@ -11,6 +11,13 @@ public class RuneTrigger : MonoBehaviour {
     public GameObject triggerEffect;
 
     public GameObject m_SecondaryEffect = null;
+
+    void OnLevelWasLoaded(int level)
+    {
+        runesActive = 0;
+        Debug.Log("Runes active reset.");
+    }
+
 	void Update () 
     {
 
