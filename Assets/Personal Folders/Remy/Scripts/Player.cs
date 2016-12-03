@@ -111,6 +111,8 @@ public class Player : MonoBehaviour {
     [SerializeField]
     private Material m_FallMat = null;
 
+    private PlayerAnimControl m_PlayerAnimControl = null;
+
     void Awake()
     {
         if (m_Instance != null)
@@ -125,6 +127,8 @@ public class Player : MonoBehaviour {
         m_VertexMat = this.GetComponent<Renderer>().material;
 
         m_FrameTime = 1.0f / m_FramesPerSecond;
+
+        m_PlayerAnimControl = this.GetComponent<PlayerAnimControl>();
 
         //init particlePool
         m_ParticleRoot = new GameObject().transform;
@@ -198,6 +202,7 @@ public class Player : MonoBehaviour {
                 b_JumpTimerActive = true;
                 m_JumpTimer = 0.0f;
                 Vector3 jumpVel = Vector3.up * 5.0f;
+                m_PlayerAnimControl.PlayJumpAnim();
 
                 m_CharacterController.Move(Vector3.up * m_JumpForceCurve.Evaluate(m_JumpTimer) * m_JumpForce * Time.deltaTime);
                 //Debug.Log("Jump");
@@ -216,6 +221,7 @@ public class Player : MonoBehaviour {
                 b_JumpTimerActive = false;
                 b_Jumping = false;
                 b_Running = true;
+                m_PlayerAnimControl.PlayLandAnim();
                 var go = (GameObject)GameObject.Instantiate(m_LandingParticlesPrefab, this.transform.position, Quaternion.identity);
 
                 Destroy(go, 5.0f);
