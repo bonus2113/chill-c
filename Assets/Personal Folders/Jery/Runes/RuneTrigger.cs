@@ -17,15 +17,15 @@ public class RuneTrigger : MonoBehaviour {
          // update visuals
         if(!triggered && triggers != null)
         {
-            GetComponent<MeshRenderer>().material.SetFloat("_Emission", 1f + Mathf.Abs(Mathf.Sin(Time.time * 2f)) * 0.7f);
+            GetComponent<MeshRenderer>().material.SetFloat("_Emission", 2.9f + Mathf.Abs(Mathf.Sin(Time.time * 2f)) * 0.35f);
         }
         else if(triggered)
         {
-            GetComponent<MeshRenderer>().material.SetFloat("_Emission", 1.4f + Mathf.Abs(Mathf.Sin(Time.time)) * 0.3f);
+            GetComponent<MeshRenderer>().material.SetFloat("_Emission", 3.25f + Mathf.Abs(Mathf.Sin(Time.time)) * 0.05f);
         }
         else
         {
-            GetComponent<MeshRenderer>().material.SetFloat("_Emission", 1.0f);
+            GetComponent<MeshRenderer>().material.SetFloat("_Emission", 1.5f);
         }
 
         
