@@ -15,6 +15,12 @@ public class SoundManager : MonoBehaviour
     [SerializeField]
     private AudioClip plop;
     [SerializeField]
+    private AudioClip rune_activate;
+    [SerializeField]
+    private AudioClip jump_start;
+    [SerializeField]
+    private AudioClip jump_land;
+    [SerializeField]
     private List<AudioClip> footSteps;
 
     private AudioSource m_ambientLoop = null;
@@ -42,7 +48,10 @@ public class SoundManager : MonoBehaviour
     public enum Sounds
     {
         PLOP,
-        FOOTSTEP
+        FOOTSTEP,
+        RUNE,
+        JUMP_START,
+        JUMP_LAND
     };
 
     void Awake()
@@ -59,13 +68,15 @@ public class SoundManager : MonoBehaviour
         this.m_ambientLoop = this.gameObject.AddComponent<AudioSource>();
         this.m_ambientLoop.clip = ambientLoop;
         this.m_ambientLoop.loop = true;
-        this.m_ambientLoop.volume = 0.3f;
+        this.m_ambientLoop.volume = 0.2f;
 
         this.m_ThemeIntro = this.gameObject.AddComponent<AudioSource>();
         this.m_ThemeIntro.clip = themeIntro;
+        this.m_ThemeIntro.volume = 0.6f;
 
         this.m_theme = this.gameObject.AddComponent<AudioSource>();
         this.m_theme.clip = themeLoop;
+        this.m_theme.volume = 0.6f;
         this.m_theme.loop = true;
 
         DontDestroyOnLoad(transform.gameObject);
@@ -78,7 +89,7 @@ public class SoundManager : MonoBehaviour
         footstepTimer -= Time.deltaTime;
         if(Player.Instance.isRunning & footstepTimer < 0f)
         {
-            PlaySound(Sounds.FOOTSTEP, 0.48f);
+            PlaySound(Sounds.FOOTSTEP, 0.28f);
             footstepTimer = 0.25f;
         }
     }
@@ -112,6 +123,15 @@ public class SoundManager : MonoBehaviour
                 break;
             case Sounds.FOOTSTEP:
                 outClip = footSteps[Random.Range(0, footSteps.Count)];
+                break;
+            case Sounds.RUNE:
+                outClip = rune_activate;
+                break;
+            case Sounds.JUMP_START:
+                outClip = jump_start;
+                break;
+            case Sounds.JUMP_LAND:
+                outClip = jump_land;
                 break;
             default:
                 break;

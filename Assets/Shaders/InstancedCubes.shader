@@ -39,6 +39,7 @@
 			StructuredBuffer<float3> VertexBuffer;
 			StructuredBuffer<CellInformation> PointBuffer;
 			int Resolution;
+            float Brightness;
 
 			v2f vert (uint vertexId : SV_VertexID, uint instanceId : SV_InstanceID)
 			{
@@ -54,7 +55,7 @@
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
-				return i.color;
+				return i.color * Brightness;
 			}
 			ENDCG
 		}

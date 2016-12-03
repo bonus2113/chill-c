@@ -17,15 +17,15 @@ public class RuneTrigger : MonoBehaviour {
          // update visuals
         if(!triggered && triggers != null)
         {
-            GetComponent<MeshRenderer>().material.SetFloat("_Emission", 1f + Mathf.Abs(Mathf.Sin(Time.time * 2f)) * 0.7f);
+            GetComponent<MeshRenderer>().material.SetFloat("_Emission", 2.9f + Mathf.Abs(Mathf.Sin(Time.time * 2f)) * 0.35f);
         }
         else if(triggered)
         {
-            GetComponent<MeshRenderer>().material.SetFloat("_Emission", 1.4f + Mathf.Abs(Mathf.Sin(Time.time)) * 0.3f);
+            GetComponent<MeshRenderer>().material.SetFloat("_Emission", 3.25f + Mathf.Abs(Mathf.Sin(Time.time)) * 0.05f);
         }
         else
         {
-            GetComponent<MeshRenderer>().material.SetFloat("_Emission", 1.0f);
+            GetComponent<MeshRenderer>().material.SetFloat("_Emission", 1.5f);
         }
 
         
@@ -43,7 +43,7 @@ public class RuneTrigger : MonoBehaviour {
         }
         runesActive++;
         triggers.triggered = triggered = true;
-        Events.Instance.Raise(new WormEvents.WormClicked(this.gameObject, this.gameObject.transform.position));  
+        Events.Instance.Raise(new WormEvents.WormClicked(Camera.main.gameObject, this.gameObject.transform.position));  
 
         if(runesActive == 2)
         {
@@ -55,5 +55,7 @@ public class RuneTrigger : MonoBehaviour {
             var obj = (GameObject)GameObject.Instantiate(triggerEffect, transform);
             obj.transform.localPosition = Vector3.zero;
         }
+
+        SoundManager.Instance.PlaySound(SoundManager.Sounds.RUNE, 1.0f);
     }
 }
