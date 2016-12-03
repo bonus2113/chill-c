@@ -3,7 +3,7 @@ using System.Collections;
 
 public class BigAssDoor : MonoBehaviour {
 
-    public float m_Duration = 5.0f;
+    public float m_Duration = 2.5f;
 
     public Transform m_EndPosition;
     private Vector3 m_StartPos;
@@ -14,13 +14,13 @@ public class BigAssDoor : MonoBehaviour {
 
     private Vector3 m_Direction;
 
+  private Animator anim;
+
 	// Use this for initialization
 	void Start () {
 
-        m_Direction = m_EndPosition.position - this.transform.position;
-        //m_Direction.Normalize();
-
-        m_StartPos = this.transform.position;
+    //m_Direction.Normalize();
+    anim = GetComponent<Animator>();
     }
 	
 	// Update is called once per frame
@@ -30,7 +30,6 @@ public class BigAssDoor : MonoBehaviour {
         {
             m_Timer += Time.deltaTime;
 
-            this.transform.position = m_StartPos + m_Direction * (m_Timer / m_Duration);
 
             if (m_Timer >= m_Duration)
             {
@@ -42,7 +41,11 @@ public class BigAssDoor : MonoBehaviour {
 
     void OnTriggerEnter(Collider col)
     {
-        b_Triggered = true;
-        UnityEngine.Camera.main.GetComponent<GameCamera>().StartShake(10.0f, 0.1f);
+      if(col.gameObject == Player.Instance.gameObject && Player.Instance.b_CanOpenDoor)
+    {
+      b_Triggered = true;
+      UnityEngine.Camera.main.GetComponent<GameCamera>().StartShake(10.0f, 0.1f);
+      anim.enabled = true;
     }
+  }
 }
