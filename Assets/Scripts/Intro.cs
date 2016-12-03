@@ -64,6 +64,7 @@ public class Intro : MonoBehaviour {
     startButterfly.autoStart = false;
 
     UiRoot.SetActive(true);
+    AudioListener.volume = 0;
   }
 
   // Update is called once per frame
@@ -85,7 +86,7 @@ public class Intro : MonoBehaviour {
   {
     fadeInTimer -= Time.deltaTime;
     uiFade.color = new Color(0, 0, 0, fadeInTimer / fadeInTime);
-
+    AudioListener.volume = 1.0f - fadeInTimer / fadeInTime;
     if(fadeInTimer <= 0)
     {
       state = State.WaitingOnButterfly;
@@ -126,6 +127,7 @@ public class Intro : MonoBehaviour {
       startButterfly.Startle(dir, 3.0f);
 
       state = State.TransitionToGame;
+      SoundManager.Instance.StartBackgroundMusic();
 
       fadeOutLogoTimer = fadeOutLogoTime;
     }
