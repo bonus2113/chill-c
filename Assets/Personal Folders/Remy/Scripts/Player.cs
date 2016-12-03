@@ -56,6 +56,8 @@ public class Player : MonoBehaviour {
         }
     }
 
+    public bool b_CanOpenDoor = false;
+
     private float m_AnimTimer = 0.0f;
     private float m_FramesPerSecond = 12.0f;
 
