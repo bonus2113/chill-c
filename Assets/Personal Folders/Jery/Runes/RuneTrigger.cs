@@ -51,5 +51,7 @@ public class RuneTrigger : MonoBehaviour {
             var obj = (GameObject)GameObject.Instantiate(triggerEffect, transform);
             obj.transform.localPosition = Vector3.zero;
         }
+
+        SoundManager.Instance.PlaySound(SoundManager.Sounds.RUNE, 1f);
     }
 }

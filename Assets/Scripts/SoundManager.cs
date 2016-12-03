@@ -15,6 +15,12 @@ public class SoundManager : MonoBehaviour
     [SerializeField]
     private AudioClip plop;
     [SerializeField]
+    private AudioClip rune_activate;
+    [SerializeField]
+    private AudioClip jump_start;
+    [SerializeField]
+    private AudioClip jump_land;
+    [SerializeField]
     private List<AudioClip> footSteps;
 
     private AudioSource m_ambientLoop = null;
@@ -42,7 +48,10 @@ public class SoundManager : MonoBehaviour
     public enum Sounds
     {
         PLOP,
-        FOOTSTEP
+        FOOTSTEP,
+        RUNE,
+        JUMP_START,
+        JUMP_LAND
     };
 
     void Awake()
@@ -112,6 +121,15 @@ public class SoundManager : MonoBehaviour
                 break;
             case Sounds.FOOTSTEP:
                 outClip = footSteps[Random.Range(0, footSteps.Count)];
+                break;
+            case Sounds.RUNE:
+                outClip = rune_activate;
+                break;
+            case Sounds.JUMP_START:
+                outClip = jump_start;
+                break;
+            case Sounds.JUMP_LAND:
+                outClip = jump_land;
                 break;
             default:
                 break;
