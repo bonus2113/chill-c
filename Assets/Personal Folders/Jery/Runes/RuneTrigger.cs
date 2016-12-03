@@ -10,7 +10,7 @@ public class RuneTrigger : MonoBehaviour {
     public RuneTrigger triggers;
     public GameObject triggerEffect;
 
-
+    public GameObject m_SecondaryEffect = null;
 	void Update () 
     {
 
@@ -37,6 +37,10 @@ public class RuneTrigger : MonoBehaviour {
 
     void Trigger()
     {
+        if (triggers.m_SecondaryEffect != null)
+        {
+            triggers.m_SecondaryEffect.SetActive(true);
+        }
         runesActive++;
         triggers.triggered = triggered = true;
         Events.Instance.Raise(new WormEvents.WormClicked(this.gameObject, this.gameObject.transform.position));  
