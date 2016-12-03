@@ -68,13 +68,15 @@ public class SoundManager : MonoBehaviour
         this.m_ambientLoop = this.gameObject.AddComponent<AudioSource>();
         this.m_ambientLoop.clip = ambientLoop;
         this.m_ambientLoop.loop = true;
-        this.m_ambientLoop.volume = 0.3f;
+        this.m_ambientLoop.volume = 0.2f;
 
         this.m_ThemeIntro = this.gameObject.AddComponent<AudioSource>();
         this.m_ThemeIntro.clip = themeIntro;
+        this.m_ThemeIntro.volume = 0.6f;
 
         this.m_theme = this.gameObject.AddComponent<AudioSource>();
         this.m_theme.clip = themeLoop;
+        this.m_theme.volume = 0.6f;
         this.m_theme.loop = true;
 
         DontDestroyOnLoad(transform.gameObject);
@@ -86,7 +88,7 @@ public class SoundManager : MonoBehaviour
         footstepTimer -= Time.deltaTime;
         if(Player.Instance.isRunning & footstepTimer < 0f)
         {
-            PlaySound(Sounds.FOOTSTEP, 0.48f);
+            PlaySound(Sounds.FOOTSTEP, 0.28f);
             footstepTimer = 0.25f;
         }
     }

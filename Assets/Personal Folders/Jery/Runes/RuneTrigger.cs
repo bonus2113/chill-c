@@ -39,7 +39,7 @@ public class RuneTrigger : MonoBehaviour {
     {
         runesActive++;
         triggers.triggered = triggered = true;
-        Events.Instance.Raise(new WormEvents.WormClicked(this.gameObject, this.gameObject.transform.position));  
+        Events.Instance.Raise(new WormEvents.WormClicked(Camera.main.gameObject, this.gameObject.transform.position));  
 
         if(runesActive == 2)
         {
@@ -52,6 +52,6 @@ public class RuneTrigger : MonoBehaviour {
             obj.transform.localPosition = Vector3.zero;
         }
 
-        SoundManager.Instance.PlaySound(SoundManager.Sounds.RUNE, 1f);
+        SoundManager.Instance.PlaySound(SoundManager.Sounds.RUNE, 1.0f);
     }
 }
