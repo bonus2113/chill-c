@@ -58,6 +58,20 @@ public class Player : MonoBehaviour {
         }
     }
 
+    private bool b_AllowInput = false;
+    public bool AllowInput
+    {
+        get
+        {
+            return b_AllowInput;
+        }
+
+        set
+        {
+            b_AllowInput = value;
+        }
+    }
+
     public bool b_CanOpenDoor = false;
 
     private float m_AnimTimer = 0.0f;
@@ -154,6 +168,9 @@ public class Player : MonoBehaviour {
 
     private void ProcessInput(RxInputs.MovementInputs input)
     {
+        if (!AllowInput)
+            return;
+
         //Movement
         Vector3 inputDir = Vector3.zero;
         if (b_CamRelativeMovement) {

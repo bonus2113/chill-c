@@ -61,7 +61,7 @@ public class Intro : MonoBehaviour {
     cam.transform.position = camStartScreenTransform.position;
     cam.transform.rotation = camStartScreenTransform.rotation;
 
-    Player.Instance.enabled = false;
+    Player.Instance.AllowInput = false;
 
     playSettings = postP.profile.depthOfField.settings;
     postP.profile.depthOfField.settings = dofSettings;
@@ -194,7 +194,7 @@ public class Intro : MonoBehaviour {
     {
       state = State.Done;
       settings = playSettings;
-      Player.Instance.enabled = true;
+      Player.Instance.AllowInput = true;
       cam.enabled = true;
     }
   }
