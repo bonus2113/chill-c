@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: bb2ce20c936f9ae488596812e7e54567
+timeCreated: 1480770224
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Yatra One
+  fontNames:
+  - Yatra One
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

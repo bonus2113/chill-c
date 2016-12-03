@@ -20,10 +20,15 @@ public class Intro : MonoBehaviour {
   public Image uiFade;
 
   public MaskableGraphic uiLogo;
+    public MaskableGraphic uiLogo1;
+    public MaskableGraphic uiLogo2;
 
-  public GameObject UiRoot;
+    public GameObject UiRoot;
 
-  DepthOfFieldModel.Settings playSettings;
+    private Color logoStartColor = Color.white;
+    private Color logoStartColor1 = Color.white;
+    private Color logoStartColor2 = Color.white;
+    DepthOfFieldModel.Settings playSettings;
 
   Vector3 startCamPos;
   Quaternion startCamRot;
@@ -40,7 +45,15 @@ public class Intro : MonoBehaviour {
 
   State state = State.FadingIn;
 
-	// Use this for initialization
+    // Use this for initialization
+
+    void Awake()
+    {
+        logoStartColor = uiLogo.color;
+        logoStartColor1 = uiLogo1.color;
+        logoStartColor2 = uiLogo2.color;
+    }
+
 	void Start () {
     cam.enabled = false;
     startCamPos = cam.transform.position;
@@ -58,8 +71,10 @@ public class Intro : MonoBehaviour {
     fadeInTimer = fadeInTime;
 
     uiLogo.color = new Color(0, 0, 0, 0);
+        uiLogo1.color = new Color(0, 0, 0, 0);
+        uiLogo2.color = new Color(0, 0, 0, 0);
 
-    startButterfly.gameObject.SetActive(true);
+        startButterfly.gameObject.SetActive(true);
     startButterfly.Perch(butterflyLandTarget);
     startButterfly.autoStart = false;
 
@@ -108,9 +123,21 @@ public class Intro : MonoBehaviour {
   void FadeInLogo()
   {
     fadeInLogoTimer -= Time.deltaTime;
-    uiLogo.color = new Color(1, 1, 1, 1.0f - fadeInLogoTimer / fadeInLogoTime);
 
-    if (fadeInLogoTimer <= 0)
+        Color logoColor = logoStartColor;
+        float fadeVal = (1.0f - fadeInLogoTimer / fadeInLogoTime);
+        logoColor.a = fadeVal;
+        uiLogo.color = logoColor;
+
+        Color logoColor1 = logoStartColor1;
+        logoColor1.a = fadeVal;
+        uiLogo1.color = logoColor1;
+
+        Color logoColor2 = logoStartColor2;
+        logoColor2.a = fadeVal;
+        uiLogo2.color = logoColor2;
+
+        if (fadeInLogoTimer <= 0)
     {
       state = State.WaitOnButton;
     }
@@ -138,9 +165,22 @@ public class Intro : MonoBehaviour {
   void TransitionToGame()
   {
     fadeOutLogoTimer -= Time.deltaTime;
-    uiLogo.color = new Color(1, 1, 1, fadeOutLogoTimer / fadeOutLogoTime);
 
-    var settings = postP.profile.depthOfField.settings;
+        Color logoColor = logoStartColor;
+        float fadeVal = fadeOutLogoTimer / fadeOutLogoTime;
+        logoColor.a = fadeVal;
+        uiLogo.color = logoColor;
+
+        Color logoColor1 = logoStartColor1;
+        logoColor1.a = fadeVal;
+        uiLogo1.color = logoColor1;
+
+        Color logoColor2 = logoStartColor2;
+        logoColor2.a = fadeVal;
+        uiLogo2.color = logoColor2;
+
+
+        var settings = postP.profile.depthOfField.settings;
 
     settings.aperture = Mathf.Lerp(dofSettings.aperture, playSettings.aperture, 1.0f - fadeOutLogoTimer / fadeOutLogoTime);
     settings.focusDistance = Mathf.Lerp(dofSettings.focusDistance, playSettings.focusDistance, 1.0f - fadeOutLogoTimer / fadeOutLogoTime);
