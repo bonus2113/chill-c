@@ -224,6 +224,8 @@ public class Player : MonoBehaviour {
                 m_CharacterController.Move(Vector3.up * m_JumpForceCurve.Evaluate(m_JumpTimer) * m_JumpForce * Time.deltaTime);
                 //Debug.Log("Jump");
                 m_MeshFilter.mesh = m_JumpFrame;
+
+                SoundManager.Instance.PlaySoundNotSpatial(SoundManager.Sounds.JUMP_START, 0.8f);
             }
         }
         else
@@ -243,6 +245,7 @@ public class Player : MonoBehaviour {
 
                 Destroy(go, 5.0f);
                 //Debug.Log("Land");
+                SoundManager.Instance.PlaySoundNotSpatial(SoundManager.Sounds.JUMP_LAND, 0.8f);
             }
             else
             {
