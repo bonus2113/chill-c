@@ -11,7 +11,7 @@ public class PlayerAnimControl : MonoBehaviour {
         m_Animator = this.GetComponent<Animator>();
 	}
     void Update () {
-        print("update");
+        //print("update");
         if (b_Animating) {
             m_Animator.SetBool("Jump", false);
             m_Animator.SetBool("Land", false);
