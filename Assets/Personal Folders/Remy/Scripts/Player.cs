@@ -23,7 +23,9 @@ public class Player : MonoBehaviour {
 
     private bool b_JumpTimerActive = false;
     private float m_JumpTimer = 0.0f;
+    [SerializeField]
     private float m_JumpDuration = 0.2f;
+    [SerializeField]
     private float m_JumpForce = 15.0f;
 
     private MeshFilter m_MeshFilter = null;
@@ -94,6 +96,8 @@ public class Player : MonoBehaviour {
 
     [SerializeField]
     private GameObject m_LandingParticlesPrefab = null;
+    [SerializeField]
+    private AnimationCurve m_JumpForceCurve = AnimationCurve.Linear(0.0f, 1.0f, 0.0f, 0.0f);
 
     private CharacterController m_CharacterController = null;
 
@@ -195,7 +199,7 @@ public class Player : MonoBehaviour {
                 m_JumpTimer = 0.0f;
                 Vector3 jumpVel = Vector3.up * 5.0f;
 
-                m_CharacterController.Move(Vector3.up * m_JumpForce * Time.deltaTime);
+                m_CharacterController.Move(Vector3.up * m_JumpForceCurve.Evaluate(m_JumpTimer) * m_JumpForce * Time.deltaTime);
                 //Debug.Log("Jump");
                 m_MeshFilter.mesh = m_JumpFrame;
             }
@@ -223,14 +227,18 @@ public class Player : MonoBehaviour {
                 {
                     m_JumpTimer += Time.deltaTime;
 
-                    if (m_JumpTimer >= m_JumpDuration)
+                    if (m_MeshFilter.mesh != m_FallFrame && m_JumpTimer >= m_JumpDuration * 0.5f)
                     {
-                        b_JumpTimerActive = false;
                         m_MeshFilter.mesh = m_FallFrame;
                         this.GetComponent<Renderer>().material = m_FallMat;
                     }
 
-                    m_CharacterController.Move(Vector3.up * m_JumpForce * Time.deltaTime);
+                    if (m_JumpTimer >= m_JumpDuration)
+                    {
+                        b_JumpTimerActive = false;
+                    }
+
+                    m_CharacterController.Move(Vector3.up * m_JumpForceCurve.Evaluate(m_JumpTimer) * m_JumpForce * Time.deltaTime);
                 }
             }
         }
